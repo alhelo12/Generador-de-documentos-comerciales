@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 32" fill="none">
+  <path d="M4 4a2 2 0 0 1 2-2h11l9 9v17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4z" fill="#2d2d2d"/>
+  <path d="M17 2v7a2 2 0 0 0 2 2h7" fill="#3a3a3a" stroke="#2d2d2d" stroke-width="0.5"/>
+  <rect x="8" y="14" width="12" height="2" rx="1" fill="#6b6b6b"/>
+  <rect x="8" y="18" width="14" height="2" rx="1" fill="#6b6b6b"/>
+  <rect x="8" y="22" width="10" height="2" rx="1" fill="#6b6b6b"/>
+  <text x="42" y="22" font-family="'Inter Tight',sans-serif" font-size="17" font-weight="700" fill="#1a1a1a">Doc</text>
+  <text x="72" y="22" font-family="'Inter Tight',sans-serif" font-size="17" font-weight="500" fill="#6b6b6b">Gen</text>
+</svg>
