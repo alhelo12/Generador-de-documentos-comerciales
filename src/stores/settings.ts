@@ -49,7 +49,7 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   function save() {
-    localStorage.setItem('facto-settings', JSON.stringify({
+    localStorage.setItem('docgen-settings', JSON.stringify({
       company: company.value,
       logo: logo.value,
       defaultStyle: defaultStyle.value,
@@ -63,7 +63,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function load() {
     try {
-      const raw = localStorage.getItem('facto-settings')
+      const raw = localStorage.getItem('docgen-settings')
       if (!raw) return
       const data = JSON.parse(raw)
       if (data.company) company.value = data.company

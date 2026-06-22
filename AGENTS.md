@@ -1,4 +1,4 @@
-# facto — AGENTS.md
+# DocGen — AGENTS.md
 
 ## Stack
 - Vue 3 (Composition API, `<script setup>`, TS), Pinia, Vue Router, Vite 6, Tailwind v4, idb-keyval
@@ -13,7 +13,7 @@
 - Router: 4 lazy routes (`/`, `/editor/:id?`, `/history`, `/settings`) in `src/router/index.ts`
 - Types: all in `src/types/document.ts` — `DocumentData`, `StyleConfig`, `CompanyData`, `SectionConfig`, `NumberFormat`, etc.
 - Stores (Pinia, all `defineStore` with composition API):
-  - `settings.ts` — company info, logo, default style/paper, sections, custom fields, number format. Persisted to localStorage under key `facto-settings`. `load()` called on init; merges missing sections from `DEFAULT_SECTIONS`.
+  - `settings.ts` — company info, logo, default style/paper, sections, custom fields, number format. Persisted to localStorage under key `docgen-settings`. `load()` called on init; merges missing sections from `DEFAULT_SECTIONS`.
   - `editor.ts` — reactive `doc` for the active draft. `newDoc(type)`, `loadDoc(data)`, `toJSON()`.
   - `documents.ts` — loaded docs from IndexedDB (keys prefixed `doc-`). `loadAll()`, `saveDoc()`, `deleteDoc()`, `getById()`.
 - Persistence: settings → localStorage; documents → IndexedDB via `idb-keyval`

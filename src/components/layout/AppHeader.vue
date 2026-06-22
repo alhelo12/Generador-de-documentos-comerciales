@@ -21,7 +21,7 @@ const labels: Record<string, string> = { 'invoice': 'Factura', 'delivery-note': 
   <header class="h-16 border-b border-neutral-200 bg-white flex items-center px-4 lg:px-6 select-none">
     <div class="flex items-center gap-3 mr-8 cursor-pointer" @click="router.push('/')">
       <img src="/favicon.svg" alt="" class="w-7 h-7" />
-      <span class="text-lg font-semibold tracking-tight">facto</span>
+      <span class="text-lg font-semibold tracking-tight">DocGen</span>
     </div>
 
     <div class="relative">
