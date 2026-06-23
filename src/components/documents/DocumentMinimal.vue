@@ -21,7 +21,7 @@ const logoJustify = sc.logoPosition === 'center' ? 'justify-center' : sc.logoPos
 <template>
   <div class="document-page" :style="{ fontFamily: fontMap[sc.fontFamily] ?? fontMap['minimal-sans'] }">
     <!-- Logo mark -->
-    <div v-if="enabled('company')" :class="['flex', logoJustify, 'mb-12']">
+    <div v-if="enabled('company')" :class="['flex', logoJustify, 'mb-6']">
       <div>
         <img v-if="doc.company.logo" :src="doc.company.logo" class="h-8 w-auto" alt="Logo" />
         <div v-else class="w-8 h-8 border flex items-center justify-center text-sm" :style="{ borderColor: sc.accentColor + '50', color: sc.accentColor }">f</div>
@@ -36,7 +36,7 @@ const logoJustify = sc.logoPosition === 'center' ? 'justify-center' : sc.logoPos
       <p v-if="sc.showPhone || sc.showEmail" class="text-[10px] text-neutral-400 font-light">
         {{ sc.showPhone ? doc.company.phone : '' }}{{ sc.showPhone && sc.showEmail ? ' · ' : '' }}{{ sc.showEmail ? doc.company.email : '' }}
       </p>
-      <div class="my-10"></div>
+      <div class="my-8"></div>
     </div>
 
     <!-- Document type + number -->
@@ -45,7 +45,7 @@ const logoJustify = sc.logoPosition === 'center' ? 'justify-center' : sc.logoPos
     <p v-if="sc.showDate" class="text-[10px] text-neutral-400 mt-1">{{ doc.date }}</p>
     <p v-if="doc.expiryDate" class="text-[10px] text-neutral-400">Vigencia: {{ doc.expiryDate }}</p>
 
-    <div class="my-10"></div>
+    <div class="my-8"></div>
 
     <!-- Client -->
     <div v-if="enabled('client')">
@@ -56,7 +56,7 @@ const logoJustify = sc.logoPosition === 'center' ? 'justify-center' : sc.logoPos
       <p v-if="sc.showPhone || sc.showEmail" class="text-[11px] text-neutral-500">
         {{ sc.showPhone ? doc.client.phone : '' }}{{ sc.showPhone && sc.showEmail ? ' · ' : '' }}{{ sc.showEmail ? doc.client.email : '' }}
       </p>
-      <div class="my-10"></div>
+      <div class="my-8"></div>
     </div>
 
     <!-- Items -->
@@ -101,7 +101,7 @@ const logoJustify = sc.logoPosition === 'center' ? 'justify-center' : sc.logoPos
     </div>
 
     <!-- Signature -->
-    <div v-if="enabled('signature-client') || enabled('signature-company')" class="mt-16 text-[10px] text-neutral-400 flex justify-between">
+    <div v-if="enabled('signature-client') || enabled('signature-company')" class="mt-10 text-[10px] text-neutral-400 flex justify-between">
       <div v-if="enabled('signature-client')" class="text-center">
         <div class="w-32 pt-1" :style="{ borderTop: `1px solid ${sc.accentColor}60` }"></div>
         <p class="mt-1">{{ doc.signatureClientLabel }}</p>
