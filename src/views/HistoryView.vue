@@ -7,12 +7,16 @@ import AppBadge from '@/components/ui/AppBadge.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import PrintPreview from '@/components/preview/PrintPreview.vue'
 import { useDocumentCalculations } from '@/composables/useDocumentCalculations'
+import { usePrint } from '@/composables/usePrint'
+import { useToast } from '@/composables/useToast'
 import { useSettingsStore } from '@/stores/settings'
 
 const router = useRouter()
 const documents = useDocumentsStore()
 const settings = useSettingsStore()
 const { formatCurrency } = useDocumentCalculations()
+const { printDocument } = usePrint()
+const toast = useToast()
 
 const filterType = ref<string>('all')
 const search = ref('')
@@ -50,6 +54,7 @@ function preview(doc: any) {
 async function remove(id: string) {
   if (confirm('¿Eliminar este documento?')) {
     await documents.deleteDoc(id)
+    toast.show('Documento eliminado', 'success')
   }
 }
 
@@ -95,8 +100,8 @@ onMounted(() => documents.loadAll())
             <td class="py-3 px-4 text-center"><AppBadge :variant="statusVariants[d.status]">{{ statusLabels[d.status] }}</AppBadge></td>
             <td class="py-3 px-4">
               <div class="flex gap-1 justify-center">
-                <button @click.stop="editDoc(d.id)" class="px-2 py-1 text-[11px] text-neutral-500 hover:text-accent transition-colors" title="Editar">Editar</button>
-                <button @click.stop="remove(d.id)" class="px-2 py-1 text-[11px] text-neutral-400 hover:text-danger transition-colors" title="Eliminar">Eliminar</button>
+                <button @click.stop="editDoc(d.id)" class="px-2 py-1 text-[11px] text-neutral-500 hover:text-accent transition-colors" title="Editar" aria-label="Editar documento">Editar</button>
+                <button @click.stop="remove(d.id)" class="px-2 py-1 text-[11px] text-neutral-400 hover:text-danger transition-colors" title="Eliminar" aria-label="Eliminar documento">Eliminar</button>
               </div>
             </td>
           </tr>
@@ -115,7 +120,13 @@ onMounted(() => documents.loadAll())
       </div>
       <div class="flex justify-end gap-2 mt-4 no-print">
         <AppButton variant="secondary" @click="showPreview = false">Cerrar</AppButton>
-        <AppButton @click="previewDoc && editDoc(previewDoc.id)">Editar</AppButton>
+        <AppButton variant="secondary" @click="previewDoc && printDocument(previewDoc.paperSize)" aria-label="Imprimir documento">
+          <template #icon>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9V3h12v6M6 9h12M6 9H4a2 2 0 00-2 2v6h4v4h12v-4h4v-6a2 2 0 00-2-2h-2M6 15h12" /></svg>
+          </template>
+          Imprimir / PDF
+        </AppButton>
+        <AppButton @click="previewDoc && editDoc(previewDoc.id)" aria-label="Editar documento">Editar</AppButton>
       </div>
     </AppModal>
   </div>

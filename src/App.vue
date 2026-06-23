@@ -1,7 +1,15 @@
 <script setup lang="ts">
+import { ref, provide } from 'vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppStatusBar from '@/components/layout/AppStatusBar.vue'
 import AppToast from '@/components/ui/AppToast.vue'
+
+const toastRef = ref<InstanceType<typeof AppToast> | null>(null)
+provide('toast', {
+  show: (msg: string, type?: 'success' | 'error' | 'info', duration?: number) => {
+    toastRef.value?.show(msg, type, duration)
+  }
+})
 </script>
 
 <template>
@@ -15,6 +23,6 @@ import AppToast from '@/components/ui/AppToast.vue'
       </router-view>
     </main>
     <AppStatusBar class="no-print" />
-    <AppToast />
+    <AppToast ref="toastRef" />
   </div>
 </template>

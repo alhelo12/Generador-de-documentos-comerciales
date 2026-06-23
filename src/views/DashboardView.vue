@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDocumentsStore } from '@/stores/documents'
 import AppCard from '@/components/ui/AppCard.vue'
@@ -10,6 +10,7 @@ import { useDocumentCalculations } from '@/composables/useDocumentCalculations'
 const router = useRouter()
 const docs = useDocumentsStore()
 const { formatCurrency } = useDocumentCalculations()
+const loading = ref(true)
 
 const statusLabels: Record<string, string> = { 'draft': 'Borrador', 'sent': 'Enviado', 'paid': 'Pagado', 'cancelled': 'Cancelado' }
 const statusVariants: Record<string, 'default' | 'success' | 'warning' | 'danger'> = { 'draft': 'default', 'sent': 'warning', 'paid': 'success', 'cancelled': 'danger' }
@@ -28,7 +29,10 @@ function newDoc() {
   router.push('/editor')
 }
 
-onMounted(() => docs.loadAll())
+onMounted(async () => {
+  await docs.loadAll()
+  loading.value = false
+})
 </script>
 
 <template>
@@ -48,7 +52,14 @@ onMounted(() => docs.loadAll())
     </div>
 
     <!-- Stats -->
-    <div class="grid grid-cols-3 gap-4 mb-8">
+    <div v-if="loading" class="grid grid-cols-3 gap-4 mb-8">
+      <AppCard v-for="i in 3" :key="i">
+        <div class="h-3 w-20 bg-neutral-100 rounded animate-pulse"></div>
+        <div class="h-7 w-12 bg-neutral-100 rounded animate-pulse mt-2"></div>
+        <div class="h-3 w-16 bg-neutral-100 rounded animate-pulse mt-2"></div>
+      </AppCard>
+    </div>
+    <div v-else class="grid grid-cols-3 gap-4 mb-8">
       <AppCard>
         <p class="text-xs text-neutral-500 font-medium uppercase tracking-wider">Facturas</p>
         <p class="text-2xl font-bold mt-1">{{ docs.stats.invoices }}</p>
@@ -66,7 +77,26 @@ onMounted(() => docs.loadAll())
     </div>
 
     <!-- Recent -->
-    <div v-if="docs.recentDocs.length">
+    <div v-if="loading">
+      <div class="h-4 w-24 bg-neutral-100 rounded animate-pulse mb-3"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <AppCard v-for="i in 3" :key="i">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <div class="h-4 w-20 bg-neutral-100 rounded animate-pulse"></div>
+              <div class="h-3 w-16 bg-neutral-100 rounded animate-pulse mt-1"></div>
+            </div>
+            <div class="h-5 w-16 bg-neutral-100 rounded-full animate-pulse"></div>
+          </div>
+          <div class="h-3 w-24 bg-neutral-100 rounded animate-pulse mt-2"></div>
+          <div class="flex items-center justify-between mt-2">
+            <div class="h-3 w-16 bg-neutral-100 rounded animate-pulse"></div>
+            <div class="h-4 w-20 bg-neutral-100 rounded animate-pulse"></div>
+          </div>
+        </AppCard>
+      </div>
+    </div>
+    <div v-else-if="docs.recentDocs.length">
       <h2 class="text-sm font-semibold text-neutral-600 mb-3">Recientes</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <AppCard
@@ -93,7 +123,7 @@ onMounted(() => docs.loadAll())
     </div>
 
     <!-- Empty state -->
-    <div v-else class="text-center py-20">
+    <div v-else-if="!loading && !docs.recentDocs.length" class="text-center py-20">
       <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-neutral-100 flex items-center justify-center">
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" class="text-neutral-300"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
       </div>

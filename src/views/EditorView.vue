@@ -5,7 +5,9 @@ import { useEditorStore } from '@/stores/editor'
 import { useDocumentsStore } from '@/stores/documents'
 import { useSettingsStore } from '@/stores/settings'
 import { usePrint } from '@/composables/usePrint'
+import { useToast } from '@/composables/useToast'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppInput from '@/components/ui/AppInput.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import ClientSection from '@/components/editor/ClientSection.vue'
 import LinesTable from '@/components/editor/LinesTable.vue'
@@ -18,6 +20,7 @@ const editor = useEditorStore()
 const documents = useDocumentsStore()
 const settings = useSettingsStore()
 const { printDocument } = usePrint()
+const toast = useToast()
 
 const docTypes = [
   { value: 'invoice', label: 'Factura' },
@@ -46,6 +49,7 @@ onMounted(async () => {
 async function save() {
   const data = editor.toJSON()
   await documents.saveDoc(data)
+  toast.show('Documento guardado', 'success')
   router.push('/')
 }
 
@@ -72,8 +76,8 @@ watch(() => editor.doc.type, (t) => generateNumber(t))
         <p class="text-sm text-neutral-500 mt-1">Completa los datos del documento. Usa los checkboxes para activar o desactivar secciones en la vista previa.</p>
       </div>
       <div class="flex gap-2">
-        <AppButton variant="secondary" @click="discard">Descartar</AppButton>
-        <AppButton variant="primary" @click="save">Guardar</AppButton>
+        <AppButton variant="secondary" @click="discard" aria-label="Descartar documento">Descartar</AppButton>
+        <AppButton variant="primary" @click="save" aria-label="Guardar documento">Guardar</AppButton>
       </div>
     </div>
 
@@ -110,32 +114,19 @@ watch(() => editor.doc.type, (t) => generateNumber(t))
             </div>
             <div class="flex items-center gap-3">
               <label class="text-xs font-medium text-neutral-600 w-24">Tipografía</label>
-              <select :value="editor.doc.styleConfig.fontFamily" @change="editor.doc.styleConfig.fontFamily = ($event.target as HTMLSelectElement).value as any" class="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded-md bg-white outline-none focus:border-accent">
-                <option value="classic-serif">Clásica (serif)</option>
-                <option value="modern-sans">Moderna (sans bold)</option>
-                <option value="minimal-sans">Minimal (sans light)</option>
-              </select>
+              <AppSelect :modelValue="editor.doc.styleConfig.fontFamily" :options="[{ value: 'classic-serif', label: 'Clásica (serif)' }, { value: 'modern-sans', label: 'Moderna (sans bold)' }, { value: 'minimal-sans', label: 'Minimal (sans light)' }]" @update:modelValue="editor.doc.styleConfig.fontFamily = $event as any" class="flex-1" />
             </div>
             <div class="flex items-center gap-3">
               <label class="text-xs font-medium text-neutral-600 w-24">Logo</label>
-              <select :value="editor.doc.styleConfig.logoPosition" @change="editor.doc.styleConfig.logoPosition = ($event.target as HTMLSelectElement).value as any" class="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded-md bg-white outline-none focus:border-accent">
-                <option value="left">Izquierda</option>
-                <option value="center">Centrado</option>
-                <option value="right">Derecha</option>
-              </select>
+              <AppSelect :modelValue="editor.doc.styleConfig.logoPosition" :options="[{ value: 'left', label: 'Izquierda' }, { value: 'center', label: 'Centrado' }, { value: 'right', label: 'Derecha' }]" @update:modelValue="editor.doc.styleConfig.logoPosition = $event as any" class="flex-1" />
             </div>
             <div class="flex items-center gap-3">
               <label class="text-xs font-medium text-neutral-600 w-24">Moneda</label>
-              <select :value="editor.doc.styleConfig.currencySymbol" @change="editor.doc.styleConfig.currencySymbol = ($event.target as HTMLSelectElement).value" class="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded-md bg-white outline-none focus:border-accent">
-                <option value="$">$ (peso)</option>
-                <option value="US$">US$ (dólar)</option>
-                <option value="€">€ (euro)</option>
-                <option value="$MX">$MX</option>
-              </select>
+              <AppSelect :modelValue="editor.doc.styleConfig.currencySymbol" :options="[{ value: '$', label: '$ (peso)' }, { value: 'US$', label: 'US$ (dólar)' }, { value: '€', label: '€ (euro)' }, { value: '$MX', label: '$MX' }]" @update:modelValue="editor.doc.styleConfig.currencySymbol = $event" class="flex-1" />
             </div>
             <div class="flex items-center gap-3">
               <label class="text-xs font-medium text-neutral-600 w-24">Impuesto</label>
-              <input :value="editor.doc.styleConfig.taxLabel" @input="editor.doc.styleConfig.taxLabel = ($event.target as HTMLInputElement).value" class="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded-md bg-white outline-none focus:border-accent" />
+              <AppInput :modelValue="editor.doc.styleConfig.taxLabel" @update:modelValue="editor.doc.styleConfig.taxLabel = $event" class="flex-1" />
             </div>
             <div class="border-t border-neutral-100 pt-2">
               <p class="text-xs font-medium text-neutral-600 mb-2">Mostrar en el documento</p>
@@ -182,62 +173,70 @@ watch(() => editor.doc.type, (t) => generateNumber(t))
         <!-- Extra fields per doc type -->
         <div v-if="editor.doc.type === 'quote'" class="space-y-3">
           <h3 class="text-xs font-semibold uppercase tracking-wider text-neutral-500">Vigencia</h3>
-          <input type="date" :value="editor.doc.expiryDate" @input="editor.doc.expiryDate = ($event.target as HTMLInputElement).value" class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md bg-white" />
+          <AppInput :modelValue="editor.doc.expiryDate" @update:modelValue="editor.doc.expiryDate = $event" type="date" />
         </div>
 
         <!-- Sections with inline toggles + data -->
         <div>
           <p class="text-xs text-neutral-500 mb-2">Activa o desactiva secciones usando los checkboxes. Los datos se conservan aunque la sección esté oculta.</p>
+
+          <!-- Document data -->
+          <div class="bg-white border border-neutral-200 rounded-lg divide-y divide-neutral-100 mb-3">
+            <p class="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Datos del documento</p>
+            <div class="px-4 py-3 flex items-center gap-3">
+              <input type="checkbox" :checked="settings.sections.find(s => s.id === 'payment-terms')?.enabled" @change="settings.toggleSection('payment-terms')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
+              <span class="text-xs font-medium flex-1">Condiciones de pago</span>
+            </div>
+            <div v-if="settings.sections.find(s => s.id === 'payment-terms')?.enabled" class="px-4 pb-3">
+              <textarea :value="editor.doc.paymentTerms" @input="editor.doc.paymentTerms = ($event.target as HTMLTextAreaElement).value" placeholder="Ej. Crédito a 30 días" class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md bg-white outline-none focus:border-accent resize-none" rows="2"></textarea>
+            </div>
+            <div class="px-4 py-3 flex items-center gap-3">
+              <input type="checkbox" :checked="settings.sections.find(s => s.id === 'bank-info')?.enabled" @change="settings.toggleSection('bank-info')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
+              <span class="text-xs font-medium flex-1">Datos bancarios</span>
+            </div>
+            <div v-if="settings.sections.find(s => s.id === 'bank-info')?.enabled" class="px-4 pb-3">
+              <textarea :value="editor.doc.bankInfo" @input="editor.doc.bankInfo = ($event.target as HTMLTextAreaElement).value" placeholder="Ej. HSBC · 1234 5678 9012 · Clabe 012345..." class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md bg-white outline-none focus:border-accent resize-none" rows="2"></textarea>
+            </div>
+            <div class="px-4 py-3 flex items-center gap-3">
+              <input type="checkbox" :checked="settings.sections.find(s => s.id === 'notes')?.enabled" @change="settings.toggleSection('notes')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
+              <span class="text-xs font-medium flex-1">Notas al pie</span>
+            </div>
+            <div v-if="settings.sections.find(s => s.id === 'notes')?.enabled" class="px-4 pb-3">
+              <textarea :value="editor.doc.notes" @input="editor.doc.notes = ($event.target as HTMLTextAreaElement).value" placeholder="Ej. Gracias por su preferencia" class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md bg-white outline-none focus:border-accent resize-none" rows="2"></textarea>
+            </div>
+          </div>
+
+          <!-- Signatures -->
+          <div class="bg-white border border-neutral-200 rounded-lg divide-y divide-neutral-100 mb-3">
+            <p class="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Firmas</p>
+            <div class="px-4 py-3 flex items-center gap-3">
+              <input type="checkbox" :checked="settings.sections.find(s => s.id === 'signature-client')?.enabled" @change="settings.toggleSection('signature-client')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
+              <span class="text-xs font-medium flex-1">Firma del cliente</span>
+            </div>
+            <div v-if="settings.sections.find(s => s.id === 'signature-client')?.enabled" class="px-4 pb-3">
+              <input :value="editor.doc.signatureClientLabel" @input="editor.doc.signatureClientLabel = ($event.target as HTMLInputElement).value" placeholder="Firma del cliente" class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md bg-white outline-none focus:border-accent" />
+            </div>
+            <div class="px-4 py-3 flex items-center gap-3">
+              <input type="checkbox" :checked="settings.sections.find(s => s.id === 'signature-company')?.enabled" @change="settings.toggleSection('signature-company')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
+              <span class="text-xs font-medium flex-1">Firma de la empresa</span>
+            </div>
+            <div v-if="settings.sections.find(s => s.id === 'signature-company')?.enabled" class="px-4 pb-3">
+              <input :value="editor.doc.signatureCompanyLabel" @input="editor.doc.signatureCompanyLabel = ($event.target as HTMLInputElement).value" placeholder="Firma de la empresa" class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md bg-white outline-none focus:border-accent" />
+            </div>
+          </div>
+
+          <!-- Visibility toggles -->
           <div class="bg-white border border-neutral-200 rounded-lg divide-y divide-neutral-100">
-          <div class="px-4 py-3 flex items-center gap-3">
-            <input type="checkbox" :checked="settings.sections.find(s => s.id === 'payment-terms')?.enabled" @change="settings.toggleSection('payment-terms')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
-            <span class="text-xs font-medium flex-1">Condiciones de pago</span>
+            <p class="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Visibilidad</p>
+            <div class="px-4 py-3 flex items-center gap-3">
+              <input type="checkbox" :checked="settings.sections.find(s => s.id === 'totals')?.enabled" @change="settings.toggleSection('totals')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
+              <span class="text-xs font-medium flex-1">Subtotal / IVA / Total</span>
+            </div>
+            <div class="px-4 py-3 flex items-center gap-3">
+              <input type="checkbox" :checked="settings.sections.find(s => s.id === 'company')?.enabled" @change="settings.toggleSection('company')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
+              <span class="text-xs font-medium flex-1">Datos de empresa</span>
+            </div>
           </div>
-          <div v-if="settings.sections.find(s => s.id === 'payment-terms')?.enabled" class="px-4 pb-3">
-            <textarea :value="editor.doc.paymentTerms" @input="editor.doc.paymentTerms = ($event.target as HTMLTextAreaElement).value" placeholder="Ej. Crédito a 30 días" class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md bg-white outline-none focus:border-accent resize-none" rows="2"></textarea>
-          </div>
-
-          <div class="px-4 py-3 flex items-center gap-3">
-            <input type="checkbox" :checked="settings.sections.find(s => s.id === 'bank-info')?.enabled" @change="settings.toggleSection('bank-info')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
-            <span class="text-xs font-medium flex-1">Datos bancarios</span>
-          </div>
-          <div v-if="settings.sections.find(s => s.id === 'bank-info')?.enabled" class="px-4 pb-3">
-            <textarea :value="editor.doc.bankInfo" @input="editor.doc.bankInfo = ($event.target as HTMLTextAreaElement).value" placeholder="Ej. HSBC · 1234 5678 9012 · Clabe 012345..." class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md bg-white outline-none focus:border-accent resize-none" rows="2"></textarea>
-          </div>
-
-          <div class="px-4 py-3 flex items-center gap-3">
-            <input type="checkbox" :checked="settings.sections.find(s => s.id === 'notes')?.enabled" @change="settings.toggleSection('notes')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
-            <span class="text-xs font-medium flex-1">Notas al pie</span>
-          </div>
-          <div v-if="settings.sections.find(s => s.id === 'notes')?.enabled" class="px-4 pb-3">
-            <textarea :value="editor.doc.notes" @input="editor.doc.notes = ($event.target as HTMLTextAreaElement).value" placeholder="Ej. Gracias por su preferencia" class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md bg-white outline-none focus:border-accent resize-none" rows="2"></textarea>
-          </div>
-
-          <div class="flex items-center gap-3 px-4 py-3 border-b border-neutral-100 last:border-b-0">
-            <input type="checkbox" :checked="settings.sections.find(s => s.id === 'signature-client')?.enabled" @change="settings.toggleSection('signature-client')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
-            <span class="text-xs font-medium flex-1">Firma del cliente</span>
-          </div>
-          <div v-if="settings.sections.find(s => s.id === 'signature-client')?.enabled" class="px-4 pb-3 border-b border-neutral-100 last:border-b-0">
-            <input :value="editor.doc.signatureClientLabel" @input="editor.doc.signatureClientLabel = ($event.target as HTMLInputElement).value" placeholder="Firma del cliente" class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md bg-white outline-none focus:border-accent" />
-          </div>
-          <div class="flex items-center gap-3 px-4 py-3">
-            <input type="checkbox" :checked="settings.sections.find(s => s.id === 'signature-company')?.enabled" @change="settings.toggleSection('signature-company')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
-            <span class="text-xs font-medium flex-1">Firma de la empresa</span>
-          </div>
-          <div v-if="settings.sections.find(s => s.id === 'signature-company')?.enabled" class="px-4 pb-3">
-            <input :value="editor.doc.signatureCompanyLabel" @input="editor.doc.signatureCompanyLabel = ($event.target as HTMLInputElement).value" placeholder="Firma de la empresa" class="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md bg-white outline-none focus:border-accent" />
-          </div>
-
-          <div class="px-4 py-3 flex items-center gap-3">
-            <input type="checkbox" :checked="settings.sections.find(s => s.id === 'totals')?.enabled" @change="settings.toggleSection('totals')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
-            <span class="text-xs font-medium flex-1">Subtotal / IVA / Total</span>
-          </div>
-
-          <div class="px-4 py-3 flex items-center gap-3">
-            <input type="checkbox" :checked="settings.sections.find(s => s.id === 'company')?.enabled" @change="settings.toggleSection('company')" class="w-3.5 h-3.5 rounded border-neutral-300 accent-accent" />
-            <span class="text-xs font-medium flex-1">Datos de empresa</span>
-          </div>
-        </div>
         </div>
 
         <!-- Custom fields -->
@@ -260,7 +259,7 @@ watch(() => editor.doc.type, (t) => generateNumber(t))
         <div class="sticky top-6">
           <div class="flex items-center justify-between mb-3 no-print">
             <h2 class="text-sm font-semibold text-neutral-600">Vista previa</h2>
-            <AppButton size="sm" variant="secondary" @click="printDocument(editor.doc.paperSize)">
+            <AppButton size="sm" variant="secondary" @click="printDocument(editor.doc.paperSize)" aria-label="Imprimir documento">
               <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9V3h12v6M6 9h12M6 9H4a2 2 0 00-2 2v6h4v4h12v-4h4v-6a2 2 0 00-2-2h-2M6 15h12" /></svg>
               </template>

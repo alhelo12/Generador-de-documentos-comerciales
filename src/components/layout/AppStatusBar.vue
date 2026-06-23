@@ -12,6 +12,6 @@ const today = computed(() => {
 <template>
   <footer class="h-8 border-t border-neutral-200 bg-white flex items-center px-4 lg:px-6 text-[11px] text-neutral-400 select-none">
     <span>{{ docs.stats.total }} documentos · {{ today }} hoy</span>
-    <span class="ml-auto">Facto v1.0</span>
+    <span class="ml-auto">DocGen v1.0</span>
   </footer>
 </template>

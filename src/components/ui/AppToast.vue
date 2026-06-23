@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
 const visible = ref(false)
 const message = ref('')
@@ -14,8 +14,7 @@ function show(msg: string, t: 'success' | 'error' | 'info' = 'info', duration = 
   timer = setTimeout(() => { visible.value = false }, duration)
 }
 
-const toastBus = { show }
-watch(() => visible.value, () => {})
+defineExpose({ show })
 </script>
 
 <template>

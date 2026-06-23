@@ -1,14 +1,27 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, watch } from 'vue'
 import type { DocumentType } from '@/types/document'
 import { useSettingsStore } from '@/stores/settings'
 import { usePersistence } from '@/composables/usePersistence'
+import { useToast } from '@/composables/useToast'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppInput from '@/components/ui/AppInput.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
 
 const settings = useSettingsStore()
 const { exportAll, importFromFile } = usePersistence()
+const toast = useToast()
+
+let saveTimer: ReturnType<typeof setTimeout> | null = null
+function autoSave() {
+  if (saveTimer) clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => settings.save(), 500)
+}
+
+watch(() => settings.company, autoSave, { deep: true })
+watch(() => settings.defaultStyle, autoSave)
+watch(() => settings.defaultPaperSize, autoSave)
+watch(() => settings.numberFormat, autoSave, { deep: true })
 
 const tab = ref<'company' | 'appearance' | 'fields' | 'data'>('company')
 const newFieldLabel = ref('')
@@ -103,10 +116,6 @@ function handleImport(e: Event) {
           </div>
         </div>
       </div>
-
-      <div class="flex justify-end">
-        <AppButton @click="settings.save()">Guardar cambios</AppButton>
-      </div>
     </div>
 
     <!-- Appearance tab -->
@@ -118,10 +127,6 @@ function handleImport(e: Event) {
       </div>
 
       <p class="text-xs text-neutral-400">Las secciones visibles se configuran desde el editor de documentos.</p>
-
-      <div class="flex justify-end">
-        <AppButton @click="settings.save()">Guardar cambios</AppButton>
-      </div>
     </div>
 
     <!-- Custom fields tab -->
@@ -133,7 +138,7 @@ function handleImport(e: Event) {
         <div class="space-y-2 mb-4">
           <div v-for="(f, i) in settings.customFields" :key="i" class="flex items-center gap-2">
             <span class="text-sm flex-1 px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-md">{{ f.label }}</span>
-            <button @click="settings.removeCustomField(i); settings.save()" class="text-neutral-400 hover:text-danger transition-colors p-1" title="Eliminar">
+            <button @click="settings.removeCustomField(i); settings.save()" class="text-neutral-400 hover:text-danger transition-colors p-1" title="Eliminar" aria-label="Eliminar campo">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
