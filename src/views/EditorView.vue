@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useEditorStore } from '@/stores/editor'
 import { useDocumentsStore } from '@/stores/documents'
@@ -46,11 +46,18 @@ onMounted(async () => {
   }
 })
 
+const saving = ref(false)
+
 async function save() {
-  const data = editor.toJSON()
-  await documents.saveDoc(data)
-  toast.show('Documento guardado', 'success')
-  router.push('/')
+  saving.value = true
+  try {
+    const data = editor.toJSON()
+    await documents.saveDoc(data)
+    toast.show('Documento guardado', 'success')
+    router.push('/')
+  } finally {
+    saving.value = false
+  }
 }
 
 function discard() {
@@ -77,7 +84,7 @@ watch(() => editor.doc.type, (t) => generateNumber(t))
       </div>
       <div class="flex gap-2">
         <AppButton variant="secondary" @click="discard" aria-label="Descartar documento">Descartar</AppButton>
-        <AppButton variant="primary" @click="save" aria-label="Guardar documento">Guardar</AppButton>
+        <AppButton variant="primary" @click="save" :disabled="saving" :aria-busy="saving" aria-label="Guardar documento">{{ saving ? 'Guardando...' : 'Guardar' }}</AppButton>
       </div>
     </div>
 

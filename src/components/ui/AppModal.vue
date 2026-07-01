@@ -1,16 +1,45 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 
 const props = defineProps<{ show: boolean; title?: string; maxWidth?: string }>()
 const emit = defineEmits<{ close: [] }>()
 
-function onKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape' && props.show) emit('close')
+const contentRef = ref<HTMLElement | null>(null)
+
+function getFocusable(): HTMLElement[] {
+  if (!contentRef.value) return []
+  return Array.from(
+    contentRef.value.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
+  )
 }
 
-watch(() => props.show, (v) => {
-  if (v) document.addEventListener('keydown', onKeydown)
-  else document.removeEventListener('keydown', onKeydown)
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && props.show) {
+    emit('close')
+    return
+  }
+  if (e.key === 'Tab' && props.show) {
+    const focusable = getFocusable()
+    if (focusable.length === 0) return
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus() }
+    } else {
+      if (document.activeElement === last) { e.preventDefault(); first.focus() }
+    }
+  }
+}
+
+watch(() => props.show, async (v) => {
+  if (v) {
+    document.addEventListener('keydown', onKeydown)
+    await nextTick()
+    const focusable = getFocusable()
+    if (focusable.length > 0) focusable[0].focus()
+  } else {
+    document.removeEventListener('keydown', onKeydown)
+  }
 })
 </script>
 
@@ -26,7 +55,7 @@ watch(() => props.show, (v) => {
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
-          <div class="p-6">
+          <div ref="contentRef" class="p-6">
             <slot />
           </div>
         </div>
