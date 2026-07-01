@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { DocumentData, SectionConfig } from '@/types/document'
 import { useDocumentCalculations } from '@/composables/useDocumentCalculations'
 
@@ -8,9 +9,9 @@ const { formatCurrency } = useDocumentCalculations()
 const t = (k: string) => ({ 'invoice': 'FACTURA', 'delivery-note': 'NOTA DE REMISIÓN', 'quote': 'COTIZACIÓN' } as Record<string, string>)[k] ?? k
 const sc = props.doc.styleConfig
 
-const subtotal = props.doc.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0)
-const tax = subtotal * (props.doc.items[0]?.taxRate ?? 16) / 100
-const total = subtotal + tax
+const subtotal = computed(() => props.doc.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0))
+const tax = computed(() => props.doc.items.reduce((s, i) => s + (i.quantity * i.unitPrice * (i.taxRate ?? 16) / 100), 0))
+const total = computed(() => subtotal.value + tax.value)
 const enabled = (id: string) => props.sections.find(s => s.id === id)?.enabled ?? true
 
 const fontMap: Record<string, string> = { 'classic-serif': '"Source Serif 4", serif', 'modern-sans': '"Plus Jakarta Sans", sans-serif', 'minimal-sans': '"Inter Tight", sans-serif' }
@@ -32,9 +33,9 @@ const logoJustify = sc.logoPosition === 'center' ? 'justify-center' : sc.logoPos
     <div v-if="enabled('company')" :class="logoAlign">
       <p class="text-xs font-light uppercase tracking-[0.15em] mb-1" :style="{ color: sc.accentColor }">{{ doc.company.name }}</p>
       <p v-if="sc.showRfc" class="text-[10px] text-neutral-400 font-light">{{ doc.company.rfc }}</p>
-      <p class="text-[10px] text-neutral-400 font-light">{{ doc.company.address }}</p>
-      <p v-if="sc.showPhone || sc.showEmail" class="text-[10px] text-neutral-400 font-light">
-        {{ sc.showPhone ? doc.company.phone : '' }}{{ sc.showPhone && sc.showEmail ? ' · ' : '' }}{{ sc.showEmail ? doc.company.email : '' }}
+      <p v-if="doc.company.address" class="text-[10px] text-neutral-400 font-light">{{ doc.company.address }}</p>
+      <p v-if="(sc.showPhone && doc.company.phone) || (sc.showEmail && doc.company.email)" class="text-[10px] text-neutral-400 font-light">
+        {{ sc.showPhone && doc.company.phone ? doc.company.phone : '' }}{{ sc.showPhone && doc.company.phone && sc.showEmail && doc.company.email ? ' · ' : '' }}{{ sc.showEmail && doc.company.email ? doc.company.email : '' }}
       </p>
       <div class="my-8"></div>
     </div>
@@ -52,9 +53,9 @@ const logoJustify = sc.logoPosition === 'center' ? 'justify-center' : sc.logoPos
       <p class="text-[10px] font-semibold uppercase tracking-[0.15em] mb-2" :style="{ color: sc.accentColor }">Cliente</p>
       <p class="text-sm font-medium">{{ doc.client.name }}</p>
       <p v-if="sc.showRfc" class="text-[11px] text-neutral-500">RFC {{ doc.client.rfc }}</p>
-      <p class="text-[11px] text-neutral-500">{{ doc.client.address }}</p>
-      <p v-if="sc.showPhone || sc.showEmail" class="text-[11px] text-neutral-500">
-        {{ sc.showPhone ? doc.client.phone : '' }}{{ sc.showPhone && sc.showEmail ? ' · ' : '' }}{{ sc.showEmail ? doc.client.email : '' }}
+      <p v-if="doc.client.address" class="text-[11px] text-neutral-500">{{ doc.client.address }}</p>
+      <p v-if="(sc.showPhone && doc.client.phone) || (sc.showEmail && doc.client.email)" class="text-[11px] text-neutral-500">
+        {{ sc.showPhone && doc.client.phone ? doc.client.phone : '' }}{{ sc.showPhone && doc.client.phone && sc.showEmail && doc.client.email ? ' · ' : '' }}{{ sc.showEmail && doc.client.email ? doc.client.email : '' }}
       </p>
       <div class="my-8"></div>
     </div>
@@ -77,7 +78,7 @@ const logoJustify = sc.logoPosition === 'center' ? 'justify-center' : sc.logoPos
         <span class="tabular-nums">{{ formatCurrency(subtotal, sc.currencySymbol) }}</span>
       </div>
       <div class="flex justify-between text-xs text-neutral-500 py-1">
-        <span>{{ sc.taxLabel }} {{ doc.items[0]?.taxRate ?? 16 }}%</span>
+        <span>{{ sc.taxLabel }}</span>
         <span class="tabular-nums">{{ formatCurrency(tax, sc.currencySymbol) }}</span>
       </div>
       <div class="flex justify-between text-base font-semibold pt-2 mt-1" :style="{ borderTop: `2px solid ${sc.accentColor}` }">
@@ -94,7 +95,7 @@ const logoJustify = sc.logoPosition === 'center' ? 'justify-center' : sc.logoPos
     </div>
 
     <!-- Custom fields -->
-    <div v-if="doc.customFields.filter(f => f.value).length && enabled('custom-fields')" class="mt-10 pt-4 text-[10px] text-neutral-400 space-y-1" :style="{ borderTop: `1px solid ${sc.accentColor}20` }">
+    <div v-if="doc.customFields.filter(f => f.value).length && enabled('custom-fields')" class="mt-4 text-[10px] text-neutral-400 space-y-1">
       <div v-for="f in doc.customFields.filter(f => f.value)" :key="f.label" class="flex gap-2">
         <span class="font-medium" :style="{ color: sc.accentColor }">{{ f.label }}:</span> {{ f.value }}
       </div>

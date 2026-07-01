@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { DocumentData, SectionConfig } from '@/types/document'
 import { useDocumentCalculations } from '@/composables/useDocumentCalculations'
 
@@ -8,9 +9,9 @@ const { formatCurrency } = useDocumentCalculations()
 const t = (k: string) => ({ 'invoice': 'FACTURA', 'delivery-note': 'NOTA DE REMISIÓN', 'quote': 'COTIZACIÓN' } as Record<string, string>)[k] ?? k
 const sc = props.doc.styleConfig
 
-const subtotal = props.doc.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0)
-const tax = subtotal * (props.doc.items[0]?.taxRate ?? 16) / 100
-const total = subtotal + tax
+const subtotal = computed(() => props.doc.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0))
+const tax = computed(() => props.doc.items.reduce((s, i) => s + (i.quantity * i.unitPrice * (i.taxRate ?? 16) / 100), 0))
+const total = computed(() => subtotal.value + tax.value)
 const enabled = (id: string) => props.sections.find(s => s.id === id)?.enabled ?? true
 
 const fontMap: Record<string, string> = { 'classic-serif': '"Source Serif 4", serif', 'modern-sans': '"Plus Jakarta Sans", sans-serif', 'minimal-sans': '"Inter Tight", sans-serif' }
@@ -35,10 +36,10 @@ const fontMap: Record<string, string> = { 'classic-serif': '"Source Serif 4", se
     </div>
 
     <!-- Contact strip -->
-    <div v-if="enabled('company')" class="rounded-lg px-4 py-3 mb-6 text-[11px] flex flex-wrap gap-x-6 gap-y-1" :style="{ backgroundColor: sc.accentColor + '12', color: sc.accentColor }">
-      <span>{{ doc.company.address }}</span>
-      <span v-if="sc.showPhone">{{ doc.company.phone }}</span>
-      <span v-if="sc.showEmail">{{ doc.company.email }}</span>
+    <div v-if="enabled('company') && (doc.company.address || (sc.showPhone && doc.company.phone) || (sc.showEmail && doc.company.email) || doc.company.website)" class="rounded-lg px-4 py-3 mb-6 text-[11px] flex flex-wrap gap-x-6 gap-y-1" :style="{ backgroundColor: sc.accentColor + '12', color: sc.accentColor }">
+      <span v-if="doc.company.address">{{ doc.company.address }}</span>
+      <span v-if="sc.showPhone && doc.company.phone">{{ doc.company.phone }}</span>
+      <span v-if="sc.showEmail && doc.company.email">{{ doc.company.email }}</span>
       <span v-if="doc.company.website">{{ doc.company.website }}</span>
     </div>
 
@@ -48,9 +49,9 @@ const fontMap: Record<string, string> = { 'classic-serif': '"Source Serif 4", se
         <p class="text-[10px] font-bold uppercase tracking-wider mb-1" :style="{ color: sc.accentColor }">Cliente</p>
         <p class="text-sm font-bold">{{ doc.client.name }}</p>
         <p v-if="sc.showRfc" class="text-xs text-neutral-600">RFC {{ doc.client.rfc }}</p>
-        <p class="text-xs text-neutral-600">{{ doc.client.address }}</p>
-        <p v-if="sc.showPhone || sc.showEmail" class="text-xs text-neutral-600">
-          {{ sc.showPhone ? doc.client.phone : '' }}{{ sc.showPhone && sc.showEmail ? ' · ' : '' }}{{ sc.showEmail ? doc.client.email : '' }}
+        <p v-if="doc.client.address" class="text-xs text-neutral-600">{{ doc.client.address }}</p>
+        <p v-if="(sc.showPhone && doc.client.phone) || (sc.showEmail && doc.client.email)" class="text-xs text-neutral-600">
+          {{ sc.showPhone && doc.client.phone ? doc.client.phone : '' }}{{ sc.showPhone && doc.client.phone && sc.showEmail && doc.client.email ? ' · ' : '' }}{{ sc.showEmail && doc.client.email ? doc.client.email : '' }}
         </p>
       </div>
       <div class="text-right text-xs text-neutral-500">
@@ -91,7 +92,7 @@ const fontMap: Record<string, string> = { 'classic-serif': '"Source Serif 4", se
         <span class="tabular-nums font-medium">{{ formatCurrency(subtotal, sc.currencySymbol) }}</span>
       </div>
       <div class="flex justify-between text-xs py-1">
-        <span :style="{ color: sc.accentColor }">{{ sc.taxLabel }} {{ doc.items[0]?.taxRate ?? 16 }}%</span>
+        <span :style="{ color: sc.accentColor }">{{ sc.taxLabel }}</span>
         <span class="tabular-nums font-medium">{{ formatCurrency(tax, sc.currencySymbol) }}</span>
       </div>
       <div class="flex justify-between text-sm font-bold pt-2 mt-1" :style="{ borderTop: `2px solid ${sc.accentColor}` }">

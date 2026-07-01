@@ -45,7 +45,7 @@ watch(() => props.show, async (v) => {
 
 <template>
   <Teleport to="body">
-    <Transition name="page">
+    <Transition name="modal">
       <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center" @click.self="emit('close')">
         <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" />
         <div :class="['relative bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto', maxWidth ?? 'max-w-4xl', 'w-full mx-4']">

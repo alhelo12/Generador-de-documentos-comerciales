@@ -19,7 +19,7 @@ defineExpose({ show })
 
 <template>
   <Teleport to="body">
-    <Transition name="page">
+    <Transition name="toast">
       <div
         v-if="visible"
         :class="[

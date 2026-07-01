@@ -5,6 +5,8 @@ import { useDocumentsStore } from '@/stores/documents'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppBadge from '@/components/ui/AppBadge.vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import AppConfirm from '@/components/ui/AppConfirm.vue'
+import AppInput from '@/components/ui/AppInput.vue'
 import PrintPreview from '@/components/preview/PrintPreview.vue'
 import { useDocumentCalculations } from '@/composables/useDocumentCalculations'
 import { usePrint } from '@/composables/usePrint'
@@ -22,6 +24,8 @@ const filterType = ref<string>('all')
 const search = ref('')
 const previewDoc = ref<any>(null)
 const showPreview = ref(false)
+const deleteTarget = ref<string | null>(null)
+const showDeleteConfirm = ref(false)
 
 const statusLabels: Record<string, string> = { 'draft': 'Borrador', 'sent': 'Enviado', 'paid': 'Pagado', 'cancelled': 'Cancelado' }
 const statusVariants: Record<string, 'default' | 'success' | 'warning' | 'danger'> = { 'draft': 'default', 'sent': 'warning', 'paid': 'success', 'cancelled': 'danger' }
@@ -51,11 +55,18 @@ function preview(doc: any) {
   showPreview.value = true
 }
 
-async function remove(id: string) {
-  if (confirm('¿Eliminar este documento?')) {
-    await documents.deleteDoc(id)
+function confirmDelete(id: string) {
+  deleteTarget.value = id
+  showDeleteConfirm.value = true
+}
+
+async function remove() {
+  if (deleteTarget.value) {
+    await documents.deleteDoc(deleteTarget.value)
     toast.show('Documento eliminado', 'success')
+    deleteTarget.value = null
   }
+  showDeleteConfirm.value = false
 }
 
 onMounted(() => documents.loadAll())
@@ -73,7 +84,7 @@ onMounted(() => documents.loadAll())
       <div class="flex gap-1 bg-neutral-100 rounded-lg p-1">
         <button v-for="f in [{v:'all',l:'Todos'},{v:'invoice',l:'Facturas'},{v:'quote',l:'Cotizaciones'},{v:'delivery-note',l:'Remisiones'}]" :key="f.v" @click="filterType = f.v" :class="['px-3 py-1.5 text-xs font-medium rounded-md transition-colors', filterType === f.v ? 'bg-white text-neutral-950 shadow-sm' : 'text-neutral-500 hover:text-neutral-700']">{{ f.l }}</button>
       </div>
-      <input v-model="search" placeholder="Buscar por número o cliente..." class="flex-1 max-w-xs px-3 py-1.5 text-sm border border-neutral-200 rounded-md bg-white outline-none focus:border-accent" />
+      <AppInput v-model="search" placeholder="Buscar por número o cliente..." class="flex-1 max-w-xs" />
     </div>
 
     <!-- Table -->
@@ -100,8 +111,14 @@ onMounted(() => documents.loadAll())
             <td class="py-3 px-4 text-center"><AppBadge :variant="statusVariants[d.status]">{{ statusLabels[d.status] }}</AppBadge></td>
             <td class="py-3 px-4">
               <div class="flex gap-1 justify-center">
-                <button @click.stop="editDoc(d.id)" class="px-2 py-1 text-[11px] text-neutral-500 hover:text-accent transition-colors" title="Editar" aria-label="Editar documento">Editar</button>
-                <button @click.stop="remove(d.id)" class="px-2 py-1 text-[11px] text-neutral-400 hover:text-danger transition-colors" title="Eliminar" aria-label="Eliminar documento">Eliminar</button>
+                <button @click.stop="editDoc(d.id)" class="inline-flex items-center gap-1 px-2 py-1 text-[11px] text-neutral-500 hover:text-accent transition-colors" title="Editar" aria-label="Editar documento">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  Editar
+                </button>
+                <button @click.stop="confirmDelete(d.id)" class="inline-flex items-center gap-1 px-2 py-1 text-[11px] text-neutral-400 hover:text-danger transition-colors" title="Eliminar" aria-label="Eliminar documento">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  Eliminar
+                </button>
               </div>
             </td>
           </tr>
@@ -129,5 +146,15 @@ onMounted(() => documents.loadAll())
         <AppButton @click="previewDoc && editDoc(previewDoc.id)" aria-label="Editar documento">Editar</AppButton>
       </div>
     </AppModal>
+
+    <AppConfirm
+      :show="showDeleteConfirm"
+      title="Eliminar documento"
+      message="¿Estás seguro de que deseas eliminar este documento? Esta acción no se puede deshacer."
+      confirm-text="Eliminar"
+      variant="danger"
+      @confirm="remove"
+      @cancel="showDeleteConfirm = false"
+    />
   </div>
 </template>
