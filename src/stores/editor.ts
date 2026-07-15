@@ -3,18 +3,26 @@ import { reactive, computed } from 'vue'
 import type { DocumentData, DocumentType, LineItem, StyleConfig } from '@/types/document'
 import { DEFAULT_STYLE_CONFIG } from '@/types/document'
 import { useSettingsStore } from './settings'
+import { useDocumentsStore } from './documents'
 
 let nextLineId = 1
 function lineId() { return `line-${nextLineId++}` }
 
+function parseSequence(number: string): number {
+  const parts = number.split('-')
+  const last = parts[parts.length - 1]
+  const n = parseInt(last, 10)
+  return isNaN(n) ? 0 : n
+}
+
 function blankDoc(type: DocumentType): DocumentData {
   const now = new Date().toISOString().split('T')[0]
   const settings = useSettingsStore()
-  const prefixes = { 'invoice': 'F', 'delivery-note': 'R', 'quote': 'C' }
+  const fmt = settings.numberFormat[type]
   return {
     id: crypto.randomUUID(),
     type,
-    number: `${prefixes[type]}-001`,
+    number: `${fmt.prefix}-${String(1).padStart(fmt.padding, '0')}`,
     status: 'draft',
     style: settings.defaultStyle,
     paperSize: settings.defaultPaperSize,
@@ -39,14 +47,24 @@ export const useEditorStore = defineStore('editor', () => {
   const doc = reactive<DocumentData>(blankDoc('invoice'))
 
   const subtotal = computed(() => doc.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0))
-  const taxAmount = computed(() => subtotal.value * (doc.items[0]?.taxRate ?? 16) / 100)
+  const taxAmount = computed(() => doc.items.reduce((s, i) => s + i.quantity * i.unitPrice * (i.taxRate ?? 16) / 100, 0))
   const total = computed(() => subtotal.value + taxAmount.value)
+
+  function generateNumber(type: DocumentType) {
+    const settings = useSettingsStore()
+    const documents = useDocumentsStore()
+    const fmt = settings.numberFormat[type]
+    const max = documents.docs
+      .filter(d => d.type === type)
+      .reduce((mx, d) => Math.max(mx, parseSequence(d.number)), 0)
+    doc.number = `${fmt.prefix}-${String(max + 1).padStart(fmt.padding, '0')}`
+  }
 
   function newDoc(type: DocumentType) {
     const settings = useSettingsStore()
     Object.assign(doc, blankDoc(type))
     doc.company = { ...settings.company }
-    doc.styleConfig = { ...settings.styleConfig }
+    doc.styleConfig = { ...DEFAULT_STYLE_CONFIG }
     syncCustomFields()
   }
 
@@ -82,5 +100,5 @@ export const useEditorStore = defineStore('editor', () => {
     return JSON.parse(JSON.stringify(doc))
   }
 
-  return { doc, subtotal, taxAmount, total, newDoc, loadDoc, addItem, removeItem, toJSON }
+  return { doc, subtotal, taxAmount, total, newDoc, generateNumber, loadDoc, addItem, removeItem, toJSON }
 })

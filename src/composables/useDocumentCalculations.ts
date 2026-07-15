@@ -3,13 +3,11 @@ export function useDocumentCalculations() {
     return `${symbol}${amount.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
-  function calcSubtotal(items: { quantity: number; unitPrice: number }[]): number {
-    return items.reduce((s, i) => s + i.quantity * i.unitPrice, 0)
+  function docTotal(items: { quantity: number; unitPrice: number; taxRate?: number }[]): number {
+    const sub = items.reduce((s, i) => s + i.quantity * i.unitPrice, 0)
+    const tax = items.reduce((s, i) => s + i.quantity * i.unitPrice * (i.taxRate ?? 16) / 100, 0)
+    return sub + tax
   }
 
-  function calcTax(subtotal: number, taxRate: number): number {
-    return subtotal * taxRate / 100
-  }
-
-  return { formatCurrency, calcSubtotal, calcTax }
+  return { formatCurrency, docTotal }
 }

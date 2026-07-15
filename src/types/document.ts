@@ -98,12 +98,6 @@ export const DEFAULT_STYLE_CONFIG: StyleConfig = {
   currencySymbol: '$',
 }
 
-export const DOCUMENT_LABELS: Record<DocumentType, string> = {
-  'invoice': 'Factura',
-  'delivery-note': 'Nota de Remisión',
-  'quote': 'Cotización',
-}
-
 export const DEFAULT_SECTIONS: SectionConfig[] = [
   { id: 'company', label: 'Datos de empresa', enabled: true },
   { id: 'client', label: 'Datos del cliente', enabled: true },
@@ -121,10 +115,4 @@ export const DEFAULT_NUMBER_FORMAT: NumberFormat = {
   invoice: { prefix: 'F', padding: 3 },
   'delivery-note': { prefix: 'R', padding: 3 },
   quote: { prefix: 'C', padding: 3 },
-}
-
-export const TYPE_SPECIFIC_FIELDS: Record<DocumentType, { field: keyof DocumentData; label: string }[]> = {
-  'invoice': [],
-  'delivery-note': [],
-  'quote': [{ field: 'expiryDate', label: 'Vigencia de la oferta' }],
 }

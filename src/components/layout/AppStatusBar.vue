@@ -5,7 +5,7 @@ import { useDocumentsStore } from '@/stores/documents'
 const docs = useDocumentsStore()
 const today = computed(() => {
   const todayStr = new Date().toISOString().split('T')[0]
-  return docs.docs.filter(d => d.createdAt === todayStr).length
+  return docs.docs.filter(d => d.updatedAt === todayStr).length
 })
 </script>
 

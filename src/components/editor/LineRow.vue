@@ -3,7 +3,7 @@ import type { LineItem } from '@/types/document'
 import { useDocumentCalculations } from '@/composables/useDocumentCalculations'
 
 const props = defineProps<{ item: LineItem; index: number; isOnly: boolean }>()
-const emit = defineEmits<{ update: [field: string, value: any]; remove: [] }>()
+const emit = defineEmits<{ update: [field: keyof LineItem, value: string | number]; remove: [] }>()
 const { formatCurrency } = useDocumentCalculations()
 
 const importe = () => props.item.quantity * props.item.unitPrice
@@ -23,6 +23,9 @@ const importe = () => props.item.quantity * props.item.unitPrice
     </td>
     <td class="py-2 pr-2 align-middle w-24">
       <input :value="item.unitPrice" type="number" min="0" step="0.01" @input="emit('update', 'unitPrice', Number(($event.target as HTMLInputElement).value))" class="w-full px-2 py-1.5 text-xs border border-neutral-200 rounded bg-transparent outline-none focus:border-accent text-right" />
+    </td>
+    <td class="py-2 pr-2 align-middle w-16">
+      <input :value="item.taxRate" type="number" min="0" max="100" step="0.5" @input="emit('update', 'taxRate', Number(($event.target as HTMLInputElement).value))" class="w-full px-2 py-1.5 text-xs border border-neutral-200 rounded bg-transparent outline-none focus:border-accent text-right" />
     </td>
     <td class="py-2 align-middle w-24 text-right text-xs font-medium tabular-nums pr-1">{{ formatCurrency(importe()) }}</td>
     <td class="py-2 align-middle w-8 text-center">

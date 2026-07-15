@@ -1,4 +1,5 @@
 import { useDocumentsStore } from '@/stores/documents'
+import type { DocumentData } from '@/types/document'
 
 export function usePersistence() {
   const store = useDocumentsStore()
@@ -14,14 +15,14 @@ export function usePersistence() {
     URL.revokeObjectURL(url)
   }
 
-  function importFromFile(file: File): Promise<string> {
+  function importFromFile(file: File): Promise<DocumentData[]> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
-      reader.onload = async (e) => {
+      reader.onload = () => {
         try {
-          const data = JSON.parse(e.target?.result as string)
+          const data = JSON.parse(reader.result as string)
           if (!Array.isArray(data)) throw new Error('Formato inválido')
-          resolve(`Importados ${data.length} documentos`)
+          resolve(data as DocumentData[])
         } catch (err) {
           reject(new Error('Archivo inválido'))
         }

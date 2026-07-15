@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AppButton from '@/components/ui/AppButton.vue'
 import { useEditorStore } from '@/stores/editor'
+import type { DocumentType } from '@/types/document'
 
 const router = useRouter()
 const route = useRoute()
@@ -17,7 +18,7 @@ function newDoc(type: 'invoice' | 'delivery-note' | 'quote') {
 
 function closeMenu() { showNewMenu.value = false }
 
-const labels: Record<string, string> = { 'invoice': 'Factura', 'delivery-note': 'Remisión', 'quote': 'Cotización' }
+const labels: Record<DocumentType, string> = { 'invoice': 'Factura', 'delivery-note': 'Remisión', 'quote': 'Cotización' }
 </script>
 
 <template>
@@ -36,7 +37,7 @@ const labels: Record<string, string> = { 'invoice': 'Factura', 'delivery-note': 
       </AppButton>
       <Transition name="dropdown">
         <div v-if="showNewMenu" class="absolute top-full mt-1 left-0 bg-white border border-neutral-200 rounded-lg shadow-lg py-1 min-w-[180px] z-10" @click.self @keydown.escape="closeMenu" role="menu">
-          <button v-for="(label, type) in labels" :key="type" @click="newDoc(type as any)" class="w-full text-left px-4 py-2 text-sm hover:bg-neutral-100 transition-colors" role="menuitem">
+          <button v-for="(label, type) in labels" :key="type" @click="newDoc(type)" class="w-full text-left px-4 py-2 text-sm hover:bg-neutral-100 transition-colors" role="menuitem">
             {{ label }}
           </button>
         </div>

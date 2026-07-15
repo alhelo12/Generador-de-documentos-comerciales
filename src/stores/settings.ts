@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { CompanyData, SectionConfig, CustomField, TemplateStyle, PaperSize, DocumentType, StyleConfig, NumberFormat } from '@/types/document'
-import { DEFAULT_SECTIONS, DEFAULT_STYLE_CONFIG, DEFAULT_NUMBER_FORMAT } from '@/types/document'
+import type { CompanyData, SectionConfig, CustomField, TemplateStyle, PaperSize, DocumentType, NumberFormat } from '@/types/document'
+import { DEFAULT_SECTIONS, DEFAULT_NUMBER_FORMAT } from '@/types/document'
 
 export const useSettingsStore = defineStore('settings', () => {
   const company = ref<CompanyData>({
@@ -19,7 +19,6 @@ export const useSettingsStore = defineStore('settings', () => {
   const defaultPaperSize = ref<PaperSize>('letter')
   const sections = ref<SectionConfig[]>(JSON.parse(JSON.stringify(DEFAULT_SECTIONS)))
   const customFields = ref<CustomField[]>([])
-  const styleConfig = ref<StyleConfig>({ ...DEFAULT_STYLE_CONFIG })
   const numberFormat = ref<NumberFormat>(JSON.parse(JSON.stringify(DEFAULT_NUMBER_FORMAT)))
 
   function setLogo(dataUrl: string | undefined) {
@@ -34,10 +33,6 @@ export const useSettingsStore = defineStore('settings', () => {
       sections.value.push(s)
     }
     s.enabled = !s.enabled
-  }
-
-  function updateCompany(data: Partial<CompanyData>) {
-    Object.assign(company.value, data)
   }
 
   function addCustomField(label: string) {
@@ -56,7 +51,6 @@ export const useSettingsStore = defineStore('settings', () => {
       defaultPaperSize: defaultPaperSize.value,
       sections: sections.value,
       customFields: customFields.value,
-      styleConfig: styleConfig.value,
       numberFormat: numberFormat.value,
     }))
   }
@@ -71,7 +65,6 @@ export const useSettingsStore = defineStore('settings', () => {
       if (data.defaultStyle) defaultStyle.value = data.defaultStyle
       if (data.defaultPaperSize) defaultPaperSize.value = data.defaultPaperSize
       if (data.customFields) customFields.value = data.customFields
-      if (data.styleConfig) styleConfig.value = data.styleConfig
       if (data.numberFormat) numberFormat.value = data.numberFormat
       if (data.sections) {
         const savedIds = new Set(data.sections.map((s: SectionConfig) => s.id))
@@ -85,5 +78,5 @@ export const useSettingsStore = defineStore('settings', () => {
 
   load()
 
-  return { company, logo, defaultStyle, defaultPaperSize, sections, customFields, styleConfig, numberFormat, setLogo, toggleSection, updateCompany, addCustomField, removeCustomField, save, load }
+  return { company, logo, defaultStyle, defaultPaperSize, sections, customFields, numberFormat, setLogo, toggleSection, addCustomField, removeCustomField, save, load }
 })

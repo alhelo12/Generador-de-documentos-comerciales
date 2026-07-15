@@ -3,7 +3,6 @@ defineProps<{
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   disabled?: boolean
-  loading?: boolean
   type?: 'button' | 'submit'
 }>()
 </script>
@@ -11,7 +10,7 @@ defineProps<{
 <template>
   <button
     :type="type ?? 'button'"
-    :disabled="disabled || loading"
+    :disabled="disabled"
     :class="[
       'inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all duration-150 select-none',
       'active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none',
@@ -24,6 +23,5 @@ defineProps<{
   >
     <slot name="icon" />
     <slot />
-    <span v-if="loading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
   </button>
 </template>

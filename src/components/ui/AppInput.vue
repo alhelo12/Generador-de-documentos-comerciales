@@ -4,8 +4,6 @@ defineProps<{
   modelValue: string | number
   type?: string
   placeholder?: string
-  error?: string
-  help?: string
 }>()
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 </script>
@@ -18,13 +16,7 @@ const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
       :value="modelValue"
       :placeholder="placeholder"
       @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-      :class="[
-        'w-full px-3 py-2 text-sm border rounded-md bg-white transition-colors outline-none',
-        'focus:border-accent focus:ring-1 focus:ring-accent/30',
-        error ? 'border-danger' : 'border-neutral-300',
-      ]"
+      class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md bg-white outline-none transition-colors focus:border-accent focus:ring-1 focus:ring-accent/30"
     />
-    <p v-if="error" class="text-xs text-danger">{{ error }}</p>
-    <p v-else-if="help" class="text-xs text-neutral-400">{{ help }}</p>
   </div>
 </template>

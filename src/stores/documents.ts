@@ -30,7 +30,22 @@ export const useDocumentsStore = defineStore('documents', () => {
     const idx = docs.value.findIndex(d => d.id === data.id)
     if (idx >= 0) docs.value[idx] = data
     else docs.value.push(data)
-    await set(`doc-${data.id}`, data)
+    try {
+      await set(`doc-${data.id}`, data)
+    } catch (e) {
+      throw new Error('Error al guardar en el almacenamiento local')
+    }
+  }
+
+  async function importDocs(incoming: DocumentData[]) {
+    for (const d of incoming) {
+      if (!d.id) d.id = crypto.randomUUID()
+      d.updatedAt = new Date().toISOString().split('T')[0]
+      const idx = docs.value.findIndex(x => x.id === d.id)
+      if (idx >= 0) docs.value[idx] = d
+      else docs.value.push(d)
+      await set(`doc-${d.id}`, d)
+    }
   }
 
   async function deleteDoc(id: string) {
@@ -56,5 +71,5 @@ export const useDocumentsStore = defineStore('documents', () => {
     }
   })
 
-  return { docs, loaded, recentDocs, stats, loadAll, saveDoc, deleteDoc, getById }
+  return { docs, loaded, recentDocs, stats, loadAll, saveDoc, importDocs, deleteDoc, getById }
 })

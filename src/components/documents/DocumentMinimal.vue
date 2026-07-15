@@ -1,26 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { DocumentData, SectionConfig } from '@/types/document'
-import { useDocumentCalculations } from '@/composables/useDocumentCalculations'
+import { useDocumentTemplate } from '@/composables/useDocumentTemplate'
 
 const props = defineProps<{ doc: DocumentData; sections: SectionConfig[] }>()
-const { formatCurrency } = useDocumentCalculations()
-
-const t = (k: string) => ({ 'invoice': 'FACTURA', 'delivery-note': 'NOTA DE REMISIÓN', 'quote': 'COTIZACIÓN' } as Record<string, string>)[k] ?? k
-const sc = props.doc.styleConfig
-
-const subtotal = computed(() => props.doc.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0))
-const tax = computed(() => props.doc.items.reduce((s, i) => s + (i.quantity * i.unitPrice * (i.taxRate ?? 16) / 100), 0))
-const total = computed(() => subtotal.value + tax.value)
-const enabled = (id: string) => props.sections.find(s => s.id === id)?.enabled ?? true
-
-const fontMap: Record<string, string> = { 'classic-serif': '"Source Serif 4", serif', 'modern-sans': '"Plus Jakarta Sans", sans-serif', 'minimal-sans': '"Inter Tight", sans-serif' }
-const logoAlign = sc.logoPosition === 'center' ? 'text-center' : sc.logoPosition === 'right' ? 'text-right' : 'text-left'
-const logoJustify = sc.logoPosition === 'center' ? 'justify-center' : sc.logoPosition === 'right' ? 'justify-end' : 'justify-start'
+const { sc, typeTitle: t, subtotal, tax, total, enabled, fontFamilyOf, formatCurrency } = useDocumentTemplate(props.doc, props.sections)
+const logoAlign = computed(() => sc.logoPosition === 'center' ? 'text-center' : sc.logoPosition === 'right' ? 'text-right' : 'text-left')
+const logoJustify = computed(() => sc.logoPosition === 'center' ? 'justify-center' : sc.logoPosition === 'right' ? 'justify-end' : 'justify-start')
 </script>
 
 <template>
-  <div class="document-page" :style="{ fontFamily: fontMap[sc.fontFamily] ?? fontMap['minimal-sans'] }">
+  <div class="document-page" :style="{ fontFamily: fontFamilyOf() }">
     <!-- Logo mark -->
     <div v-if="enabled('company')" :class="['flex', logoJustify, 'mb-6']">
       <div>

@@ -12,7 +12,7 @@ import AppSelect from '@/components/ui/AppSelect.vue'
 import ClientSection from '@/components/editor/ClientSection.vue'
 import LinesTable from '@/components/editor/LinesTable.vue'
 import PrintPreview from '@/components/preview/PrintPreview.vue'
-import type { DocumentType } from '@/types/document'
+import type { DocumentType, ClientData, LineItem, TemplateStyle, PaperSize, DocFontFamily, LogoPosition } from '@/types/document'
 
 const route = useRoute()
 const router = useRouter()
@@ -43,6 +43,8 @@ onMounted(async () => {
   if (id) {
     const existing = documents.getById(id)
     if (existing) editor.loadDoc(existing)
+  } else {
+    editor.generateNumber(editor.doc.type)
   }
 })
 
@@ -55,6 +57,8 @@ async function save() {
     await documents.saveDoc(data)
     toast.show('Documento guardado', 'success')
     router.push('/')
+  } catch (e) {
+    toast.show((e as Error).message || 'Error al guardar', 'error')
   } finally {
     saving.value = false
   }
@@ -64,13 +68,18 @@ function discard() {
   router.push('/')
 }
 
-function generateNumber(type: DocumentType) {
-  const fmt = settings.numberFormat[type]
-  const nextNum = documents.docs.filter(d => d.type === type).length + 1
-  editor.doc.number = `${fmt.prefix}-${String(nextNum).padStart(fmt.padding, '0')}`
+function onClientUpdate(field: keyof ClientData, value: string) {
+  editor.doc.client[field] = value
 }
 
-watch(() => editor.doc.type, (t) => generateNumber(t))
+function onLineUpdate(id: string, field: keyof LineItem, value: string | number) {
+  const item = editor.doc.items.find(i => i.id === id)
+  if (!item) return
+  if (field === 'quantity' || field === 'unitPrice' || field === 'taxRate') item[field] = Number(value)
+  else item[field] = value as string
+}
+
+watch(() => editor.doc.type, (t) => editor.generateNumber(t))
 </script>
 
 <template>
@@ -95,13 +104,13 @@ watch(() => editor.doc.type, (t) => generateNumber(t))
           label="Tipo de documento"
           :modelValue="editor.doc.type"
           :options="docTypes"
-          @update:modelValue="editor.doc.type = $event as any"
+          @update:modelValue="editor.doc.type = $event as DocumentType"
         />
 
         <AppInput label="Número de documento" :modelValue="editor.doc.number" @update:modelValue="editor.doc.number = $event" />
         <div class="grid grid-cols-2 gap-3">
-          <AppSelect label="Plantilla" :modelValue="editor.doc.style" :options="styles" @update:modelValue="editor.doc.style = $event as any" />
-          <AppSelect label="Papel" :modelValue="editor.doc.paperSize" :options="paperSizes" @update:modelValue="editor.doc.paperSize = $event as any" />
+          <AppSelect label="Plantilla" :modelValue="editor.doc.style" :options="styles" @update:modelValue="editor.doc.style = $event as TemplateStyle" />
+          <AppSelect label="Papel" :modelValue="editor.doc.paperSize" :options="paperSizes" @update:modelValue="editor.doc.paperSize = $event as PaperSize" />
         </div>
 
         <!-- Style personalization -->
@@ -121,11 +130,11 @@ watch(() => editor.doc.type, (t) => generateNumber(t))
             </div>
             <div class="flex items-center gap-3">
               <label class="text-xs font-medium text-neutral-600 w-24">Tipografía</label>
-              <AppSelect :modelValue="editor.doc.styleConfig.fontFamily" :options="[{ value: 'classic-serif', label: 'Clásica (serif)' }, { value: 'modern-sans', label: 'Moderna (sans bold)' }, { value: 'minimal-sans', label: 'Minimal (sans light)' }]" @update:modelValue="editor.doc.styleConfig.fontFamily = $event as any" class="flex-1" />
+              <AppSelect :modelValue="editor.doc.styleConfig.fontFamily" :options="[{ value: 'classic-serif', label: 'Clásica (serif)' }, { value: 'modern-sans', label: 'Moderna (sans bold)' }, { value: 'minimal-sans', label: 'Minimal (sans light)' }]" @update:modelValue="editor.doc.styleConfig.fontFamily = $event as DocFontFamily" class="flex-1" />
             </div>
             <div class="flex items-center gap-3">
               <label class="text-xs font-medium text-neutral-600 w-24">Logo</label>
-              <AppSelect :modelValue="editor.doc.styleConfig.logoPosition" :options="[{ value: 'left', label: 'Izquierda' }, { value: 'center', label: 'Centrado' }, { value: 'right', label: 'Derecha' }]" @update:modelValue="editor.doc.styleConfig.logoPosition = $event as any" class="flex-1" />
+              <AppSelect :modelValue="editor.doc.styleConfig.logoPosition" :options="[{ value: 'left', label: 'Izquierda' }, { value: 'center', label: 'Centrado' }, { value: 'right', label: 'Derecha' }]" @update:modelValue="editor.doc.styleConfig.logoPosition = $event as LogoPosition" class="flex-1" />
             </div>
             <div class="flex items-center gap-3">
               <label class="text-xs font-medium text-neutral-600 w-24">Moneda</label>
@@ -150,7 +159,7 @@ watch(() => editor.doc.type, (t) => generateNumber(t))
 
         <ClientSection
           :client="editor.doc.client"
-          @update="(field, value) => { (editor.doc.client as any)[field] = value }"
+          @update="onClientUpdate"
         >
           <template #header>
             <label class="flex items-center gap-2 cursor-pointer">
@@ -165,9 +174,10 @@ watch(() => editor.doc.type, (t) => generateNumber(t))
           :subtotal="editor.subtotal"
           :taxAmount="editor.taxAmount"
           :total="editor.total"
+          :currencySymbol="editor.doc.styleConfig.currencySymbol"
           @add="editor.addItem()"
           @remove="editor.removeItem($event)"
-          @update="(id, field, value) => { const item = editor.doc.items.find(i => i.id === id); if (item) (item as any)[field] = value }"
+          @update="onLineUpdate"
         >
           <template #header>
             <label class="flex items-center gap-2 cursor-pointer">

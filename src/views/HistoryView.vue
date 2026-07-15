@@ -16,7 +16,7 @@ import { useSettingsStore } from '@/stores/settings'
 const router = useRouter()
 const documents = useDocumentsStore()
 const settings = useSettingsStore()
-const { formatCurrency } = useDocumentCalculations()
+const { formatCurrency, docTotal } = useDocumentCalculations()
 const { printDocument } = usePrint()
 const toast = useToast()
 
@@ -32,8 +32,7 @@ const statusVariants: Record<string, 'default' | 'success' | 'warning' | 'danger
 const typeLabels: Record<string, string> = { 'invoice': 'Factura', 'delivery-note': 'Remisión', 'quote': 'Cotización' }
 
 function totalOf(d: any) {
-  const sub = d.items.reduce((s: number, i: any) => s + i.quantity * i.unitPrice, 0)
-  return sub + (sub * (d.items[0]?.taxRate ?? 16) / 100)
+  return docTotal(d.items)
 }
 
 const filtered = computed(() => {

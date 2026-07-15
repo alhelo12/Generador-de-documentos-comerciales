@@ -3,7 +3,7 @@ import type { ClientData } from '@/types/document'
 import AppInput from '@/components/ui/AppInput.vue'
 
 defineProps<{ client: ClientData }>()
-const emit = defineEmits<{ update: [field: string, value: string | number] }>()
+const emit = defineEmits<{ update: [field: keyof ClientData, value: string] }>()
 </script>
 
 <template>

@@ -9,7 +9,7 @@ import { useDocumentCalculations } from '@/composables/useDocumentCalculations'
 
 const router = useRouter()
 const docs = useDocumentsStore()
-const { formatCurrency } = useDocumentCalculations()
+const { formatCurrency, docTotal } = useDocumentCalculations()
 const loading = ref(true)
 
 const statusLabels: Record<string, string> = { 'draft': 'Borrador', 'sent': 'Enviado', 'paid': 'Pagado', 'cancelled': 'Cancelado' }
@@ -17,8 +17,7 @@ const statusVariants: Record<string, 'default' | 'success' | 'warning' | 'danger
 const typeLabels: Record<string, string> = { 'invoice': 'Factura', 'delivery-note': 'Remisión', 'quote': 'Cotización' }
 
 function totalOf(d: any) {
-  const sub = d.items.reduce((s: number, i: any) => s + i.quantity * i.unitPrice, 0)
-  return sub + (sub * (d.items[0]?.taxRate ?? 16) / 100)
+  return docTotal(d.items)
 }
 
 function openDoc(id: string) {

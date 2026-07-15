@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { DocumentType } from '@/types/document'
+import type { DocumentType, TemplateStyle, PaperSize } from '@/types/document'
 import { useSettingsStore } from '@/stores/settings'
+import { useDocumentsStore } from '@/stores/documents'
 import { usePersistence } from '@/composables/usePersistence'
 import { useToast } from '@/composables/useToast'
 import AppButton from '@/components/ui/AppButton.vue'
@@ -10,6 +11,7 @@ import AppSelect from '@/components/ui/AppSelect.vue'
 import AppCard from '@/components/ui/AppCard.vue'
 
 const settings = useSettingsStore()
+const documents = useDocumentsStore()
 const { exportAll, importFromFile } = usePersistence()
 const toast = useToast()
 
@@ -60,13 +62,17 @@ function addField() {
   newFieldLabel.value = ''
 }
 
-function handleImport(e: Event) {
+async function handleImport(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
-  importFromFile(file).then(msg => {
-    toast.show(msg, 'success')
-    location.reload()
-  }).catch(err => toast.show(err.message, 'error'))
+  try {
+    const data = await importFromFile(file)
+    await documents.importDocs(data)
+    toast.show(`Importados ${data.length} documentos`, 'success')
+    if (importUploadRef.value) importUploadRef.value.value = ''
+  } catch (err) {
+    toast.show((err as Error).message, 'error')
+  }
 }
 </script>
 
@@ -76,7 +82,7 @@ function handleImport(e: Event) {
 
     <!-- Tabs -->
     <div class="flex gap-1 bg-neutral-100 rounded-lg p-1 mb-6 w-fit">
-      <button v-for="t in [{v:'company',l:'Empresa'},{v:'appearance',l:'Apariencia'},{v:'fields',l:'Campos personalizados'},{v:'data',l:'Datos y respaldo'}]" :key="t.v" @click="tab = t.v as any" :class="['px-4 py-2 text-sm font-medium rounded-md transition-colors', tab === t.v ? 'bg-white text-neutral-950 shadow-sm' : 'text-neutral-500 hover:text-neutral-700']">{{ t.l }}</button>
+      <button v-for="t in (['company','appearance','fields','data'] as const)" :key="t" @click="tab = t" :class="['px-4 py-2 text-sm font-medium rounded-md transition-colors', tab === t ? 'bg-white text-neutral-950 shadow-sm' : 'text-neutral-500 hover:text-neutral-700']">{{ t === 'company' ? 'Empresa' : t === 'appearance' ? 'Apariencia' : t === 'fields' ? 'Campos personalizados' : 'Datos y respaldo' }}</button>
     </div>
 
     <!-- Company tab -->
@@ -123,8 +129,8 @@ function handleImport(e: Event) {
     <div v-if="tab === 'appearance'" class="space-y-6">
       <p class="text-sm text-neutral-500">Configura la apariencia por defecto de los documentos nuevos. Cada documento puede tener su propio estilo desde el editor.</p>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <AppSelect label="Estilo predeterminado" :modelValue="settings.defaultStyle" :options="styleOptions" @update:modelValue="settings.defaultStyle = $event as any" />
-        <AppSelect label="Tamaño de papel" :modelValue="settings.defaultPaperSize" :options="paperOptions" @update:modelValue="settings.defaultPaperSize = $event as any" />
+        <AppSelect label="Estilo predeterminado" :modelValue="settings.defaultStyle" :options="styleOptions" @update:modelValue="settings.defaultStyle = $event as TemplateStyle" />
+        <AppSelect label="Tamaño de papel" :modelValue="settings.defaultPaperSize" :options="paperOptions" @update:modelValue="settings.defaultPaperSize = $event as PaperSize" />
       </div>
 
       <p class="text-xs text-neutral-400">Las secciones visibles se configuran desde el editor de documentos.</p>
