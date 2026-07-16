@@ -1,15 +1,12 @@
 <script setup lang="ts">
-defineProps<{
-  hover?: boolean
-  padding?: 'sm' | 'md' | 'lg'
-}>()
+defineProps<{ hover?: boolean; padding?: 'sm' | 'md' | 'lg' }>()
 </script>
 
 <template>
   <div
     :class="[
-      'bg-white border border-neutral-200 rounded-lg shadow-sm transition-all',
-      hover ? 'cursor-pointer hover:border-neutral-300 hover:shadow-md' : '',
+      'neu-raised rounded-2xl transition-[box-shadow,transform] duration-200',
+      hover ? 'cursor-pointer hover:shadow-card-hover hover:-translate-y-0.5' : '',
       padding === 'sm' ? 'p-3' : padding === 'lg' ? 'p-6' : 'p-4',
     ]"
   >

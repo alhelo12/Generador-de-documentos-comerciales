@@ -1,17 +1,15 @@
 <script setup lang="ts">
-defineProps<{
-  variant?: 'default' | 'success' | 'warning' | 'danger'
-}>()
+defineProps<{ variant?: 'default' | 'success' | 'warning' | 'danger' }>()
 </script>
 
 <template>
   <span
     :class="[
-      'inline-block px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-full',
-      variant === 'success' ? 'bg-success/10 text-success' : '',
-      variant === 'warning' ? 'bg-warning/10 text-warning' : '',
-      variant === 'danger' ? 'bg-danger/10 text-danger' : '',
-      (!variant || variant === 'default') ? 'bg-neutral-200 text-neutral-600' : '',
+      'inline-block px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-md',
+      variant === 'success' ? 'bg-success-light text-green-700' : '',
+      variant === 'warning' ? 'bg-warning-light text-amber-700' : '',
+      variant === 'danger' ? 'bg-danger-light text-red-700' : '',
+      (!variant || variant === 'default') ? 'bg-surface-hover text-text-secondary border border-border' : '',
     ]"
   >
     <slot />

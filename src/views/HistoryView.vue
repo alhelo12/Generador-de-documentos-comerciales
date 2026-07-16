@@ -2,8 +2,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDocumentsStore } from '@/stores/documents'
-import AppButton from '@/components/ui/AppButton.vue'
-import AppBadge from '@/components/ui/AppBadge.vue'
 import AppModal from '@/components/ui/AppModal.vue'
 import AppConfirm from '@/components/ui/AppConfirm.vue'
 import AppInput from '@/components/ui/AppInput.vue'
@@ -26,14 +24,14 @@ const previewDoc = ref<any>(null)
 const showPreview = ref(false)
 const deleteTarget = ref<string | null>(null)
 const showDeleteConfirm = ref(false)
+const currentPage = ref(1)
+const perPage = 10
 
 const statusLabels: Record<string, string> = { 'draft': 'Borrador', 'sent': 'Enviado', 'paid': 'Pagado', 'cancelled': 'Cancelado' }
-const statusVariants: Record<string, 'default' | 'success' | 'warning' | 'danger'> = { 'draft': 'default', 'sent': 'warning', 'paid': 'success', 'cancelled': 'danger' }
+const statusVariants: Record<string, 'success' | 'warning' | 'danger' | 'default'> = { 'draft': 'default', 'sent': 'warning', 'paid': 'success', 'cancelled': 'danger' }
 const typeLabels: Record<string, string> = { 'invoice': 'Factura', 'delivery-note': 'Remisión', 'quote': 'Cotización' }
 
-function totalOf(d: any) {
-  return docTotal(d.items)
-}
+function totalOf(d: any) { return docTotal(d.items) }
 
 const filtered = computed(() => {
   let list = documents.docs
@@ -45,19 +43,15 @@ const filtered = computed(() => {
   return list.slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
 })
 
-function editDoc(id: string) {
-  router.push(`/editor/${id}`)
-}
+const totalPages = computed(() => Math.ceil(filtered.value.length / perPage))
+const paginated = computed(() => {
+  const start = (currentPage.value - 1) * perPage
+  return filtered.value.slice(start, start + perPage)
+})
 
-function preview(doc: any) {
-  previewDoc.value = doc
-  showPreview.value = true
-}
-
-function confirmDelete(id: string) {
-  deleteTarget.value = id
-  showDeleteConfirm.value = true
-}
+function editDoc(id: string) { router.push(`/editor/${id}`) }
+function preview(doc: any) { previewDoc.value = doc; showPreview.value = true }
+function confirmDelete(id: string) { deleteTarget.value = id; showDeleteConfirm.value = true }
 
 async function remove() {
   if (deleteTarget.value) {
@@ -72,88 +66,98 @@ onMounted(() => documents.loadAll())
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto px-4 lg:px-6 py-8">
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold tracking-tight">Historial</h1>
-      <p class="text-sm text-neutral-500 mt-1">Todos los documentos guardados. Haz clic en uno para previsualizarlo, editarlo o imprimirlo.</p>
-    </div>
+  <div class="h-full overflow-y-auto">
+    <div class="max-w-[1000px] mx-auto px-4 py-5 sm:px-6 sm:py-6">
+      <h1 class="text-xl font-bold mb-1" style="color: #0f172a;">Historial</h1>
+      <p class="text-sm mb-5" style="color: #94a3b8;">Todos los documentos guardados.</p>
 
-    <!-- Filters -->
-    <div class="flex items-center gap-3 mb-6">
-      <div class="flex gap-1 bg-neutral-100 rounded-lg p-1">
-        <button v-for="f in [{v:'all',l:'Todos'},{v:'invoice',l:'Facturas'},{v:'quote',l:'Cotizaciones'},{v:'delivery-note',l:'Remisiones'}]" :key="f.v" @click="filterType = f.v" :class="['px-3 py-1.5 text-xs font-medium rounded-md transition-colors', filterType === f.v ? 'bg-white text-neutral-950 shadow-sm' : 'text-neutral-500 hover:text-neutral-700']">{{ f.l }}</button>
+      <!-- Filters -->
+      <div class="flex flex-col gap-3 mb-5 sm:flex-row sm:items-center">
+        <div class="neu-pressed flex gap-1 overflow-x-auto p-1 rounded-xl">
+          <button v-for="f in [{v:'all',l:'Todos'},{v:'invoice',l:'Facturas'},{v:'quote',l:'Cotizaciones'},{v:'delivery-note',l:'Remisiones'}]" :key="f.v" @click="filterType = f.v; currentPage = 1" :class="['px-3 py-1.5 text-xs font-medium rounded-md transition-all', filterType === f.v ? 'bg-surface text-text shadow-sm border border-border' : 'text-text-secondary hover:text-text']">{{ f.l }}</button>
+        </div>
+        <div class="flex-1 w-full sm:max-w-xs relative">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" class="absolute left-3 top-1/2 -translate-y-1/2" style="color: #94a3b8;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <input v-model="search" aria-label="Buscar por número o cliente" placeholder="Buscar por número o cliente…" class="w-full pl-9 pr-4 py-2 text-sm rounded-xl border border-border bg-surface text-text placeholder:text-text-muted outline-none focus:ring-2 focus:ring-accent/20" />
+        </div>
       </div>
-      <AppInput v-model="search" placeholder="Buscar por número o cliente..." class="flex-1 max-w-xs" />
-    </div>
 
-    <!-- Table -->
-    <div v-if="filtered.length" class="bg-white border border-neutral-200 rounded-lg overflow-hidden">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="border-b border-neutral-200 text-[11px] uppercase tracking-wider text-neutral-500">
-            <th class="text-left py-3 px-4 font-medium">Tipo</th>
-            <th class="text-left py-3 px-4 font-medium">Número</th>
-            <th class="text-left py-3 px-4 font-medium">Cliente</th>
-            <th class="text-left py-3 px-4 font-medium">Fecha</th>
-            <th class="text-right py-3 px-4 font-medium">Total</th>
-            <th class="text-center py-3 px-4 font-medium">Estado</th>
-            <th class="text-center py-3 px-4 font-medium w-24">Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="d in filtered" :key="d.id" class="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 cursor-pointer" @click="preview(d)">
-            <td class="py-3 px-4 text-xs font-medium">{{ typeLabels[d.type] }}</td>
-            <td class="py-3 px-4 text-xs font-mono tabular-nums">{{ d.number }}</td>
-            <td class="py-3 px-4 text-xs text-neutral-600">{{ d.client.name || '—' }}</td>
-            <td class="py-3 px-4 text-xs text-neutral-500">{{ d.date }}</td>
-            <td class="py-3 px-4 text-xs text-right tabular-nums font-semibold">{{ formatCurrency(totalOf(d)) }}</td>
-            <td class="py-3 px-4 text-center"><AppBadge :variant="statusVariants[d.status]">{{ statusLabels[d.status] }}</AppBadge></td>
-            <td class="py-3 px-4">
-              <div class="flex gap-1 justify-center">
-                <button @click.stop="editDoc(d.id)" class="inline-flex items-center gap-1 px-2 py-1 text-[11px] text-neutral-500 hover:text-accent transition-colors" title="Editar" aria-label="Editar documento">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                  Editar
-                </button>
-                <button @click.stop="confirmDelete(d.id)" class="inline-flex items-center gap-1 px-2 py-1 text-[11px] text-neutral-400 hover:text-danger transition-colors" title="Eliminar" aria-label="Eliminar documento">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                  Eliminar
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div v-else class="text-center py-16 text-sm text-neutral-400">
-      {{ search || filterType !== 'all' ? 'Sin resultados para esta búsqueda.' : 'No hay documentos guardados.' }}
-    </div>
-
-    <!-- Preview modal -->
-    <AppModal :show="showPreview" title="Vista previa" @close="showPreview = false" max-width="max-w-4xl">
-      <div v-if="previewDoc" class="flex justify-center">
-        <PrintPreview :doc="previewDoc" :sections="settings.sections" />
+      <!-- Table -->
+      <div v-if="paginated.length" class="neu-raised rounded-2xl overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-border" style="color: #94a3b8;">
+              <th class="text-left py-3 px-5 text-[11px] font-semibold uppercase tracking-wider">Tipo</th>
+              <th class="text-left py-3 px-5 text-[11px] font-semibold uppercase tracking-wider">Número</th>
+              <th class="text-left py-3 px-5 text-[11px] font-semibold uppercase tracking-wider">Cliente</th>
+              <th class="text-left py-3 px-5 text-[11px] font-semibold uppercase tracking-wider">Fecha</th>
+              <th class="text-right py-3 px-5 text-[11px] font-semibold uppercase tracking-wider">Total</th>
+              <th class="text-center py-3 px-5 text-[11px] font-semibold uppercase tracking-wider">Estado</th>
+              <th class="text-center py-3 px-5 text-[11px] font-semibold uppercase tracking-wider w-24">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="d in paginated" :key="d.id" class="border-b border-border-light last:border-0 hover:bg-surface-hover cursor-pointer transition-colors" @click="preview(d)">
+              <td class="py-3 px-5 font-medium" style="color: #0f172a;">
+                <div class="flex items-center gap-2">
+                  <div :class="['w-2 h-2 rounded-full', d.type === 'invoice' ? 'bg-accent' : d.type === 'quote' ? 'bg-success' : 'bg-orange']" />
+                  {{ typeLabels[d.type] }}
+                </div>
+              </td>
+              <td class="py-3 px-5 font-mono text-xs tabular-nums" style="color: #475569;">{{ d.number }}</td>
+              <td class="py-3 px-5" style="color: #475569;">{{ d.client.name || '—' }}</td>
+              <td class="py-3 px-5" style="color: #94a3b8;">{{ d.date }}</td>
+              <td class="py-3 px-5 text-right font-semibold tabular-nums" style="color: #0f172a;">{{ formatCurrency(totalOf(d)) }}</td>
+              <td class="py-3 px-5 text-center">
+                <span :class="[
+                  'inline-block px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-md',
+                  statusVariants[d.status] === 'success' ? 'bg-success-light text-green-700' : '',
+                  statusVariants[d.status] === 'warning' ? 'bg-warning-light text-amber-700' : '',
+                  statusVariants[d.status] === 'danger' ? 'bg-danger-light text-red-700' : '',
+                  statusVariants[d.status] === 'default' ? 'bg-surface-hover text-text-secondary' : '',
+                ]">{{ statusLabels[d.status] }}</span>
+              </td>
+              <td class="py-3 px-5">
+                <div class="flex gap-1 justify-center">
+                  <button @click.stop="preview(d)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-hover transition-colors" style="color: #94a3b8;" title="Ver">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                  </button>
+                  <button @click.stop="editDoc(d.id)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-hover transition-colors" style="color: #94a3b8;" title="Editar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  </button>
+                  <button @click.stop="confirmDelete(d.id)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-hover transition-colors" style="color: #94a3b8;" title="Eliminar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div class="flex justify-end gap-2 mt-4 no-print">
-        <AppButton variant="secondary" @click="showPreview = false">Cerrar</AppButton>
-        <AppButton variant="secondary" @click="previewDoc && printDocument(previewDoc.paperSize)" aria-label="Imprimir documento">
-          <template #icon>
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9V3h12v6M6 9h12M6 9H4a2 2 0 00-2 2v6h4v4h12v-4h4v-6a2 2 0 00-2-2h-2M6 15h12" /></svg>
-          </template>
-          Imprimir / PDF
-        </AppButton>
-        <AppButton @click="previewDoc && editDoc(previewDoc.id)" aria-label="Editar documento">Editar</AppButton>
-      </div>
-    </AppModal>
 
-    <AppConfirm
-      :show="showDeleteConfirm"
-      title="Eliminar documento"
-      message="¿Estás seguro de que deseas eliminar este documento? Esta acción no se puede deshacer."
-      confirm-text="Eliminar"
-      variant="danger"
-      @confirm="remove"
-      @cancel="showDeleteConfirm = false"
-    />
+      <div v-else class="text-center py-16 text-sm" style="color: #94a3b8;">
+        {{ search || filterType !== 'all' ? 'Sin resultados.' : 'No hay documentos guardados.' }}
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="flex items-center justify-center gap-1 mt-4">
+        <button @click="currentPage = Math.max(1, currentPage - 1)" :disabled="currentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium border border-border bg-surface text-text-secondary hover:bg-surface-hover disabled:opacity-40 transition-all">&lt;</button>
+        <button v-for="p in totalPages" :key="p" @click="currentPage = p" :class="['w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium border transition-all', p === currentPage ? 'bg-accent text-white border-accent' : 'border-border bg-surface text-text-secondary hover:bg-surface-hover']">{{ p }}</button>
+        <button @click="currentPage = Math.min(totalPages, currentPage + 1)" :disabled="currentPage === totalPages" class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium border border-border bg-surface text-text-secondary hover:bg-surface-hover disabled:opacity-40 transition-all">&gt;</button>
+      </div>
+
+      <AppModal :show="showPreview" title="Vista previa" @close="showPreview = false" max-width="max-w-4xl">
+        <div v-if="previewDoc" class="flex justify-center bg-bg rounded-lg p-4 border border-border">
+          <PrintPreview :doc="previewDoc" :sections="settings.sections" />
+        </div>
+        <div class="flex justify-end gap-2 mt-4 no-print">
+          <button @click="showPreview = false" class="px-4 py-2 text-sm font-medium rounded-lg border border-border text-text-secondary hover:bg-surface-hover transition-all">Cerrar</button>
+          <button @click="previewDoc && printDocument(previewDoc.paperSize)" class="px-4 py-2 text-sm font-medium rounded-lg border border-border text-text-secondary hover:bg-surface-hover transition-all">Imprimir</button>
+          <button @click="previewDoc && editDoc(previewDoc.id)" class="px-4 py-2 text-sm font-semibold text-white rounded-lg bg-accent hover:bg-accent-hover transition-all">Editar</button>
+        </div>
+      </AppModal>
+
+      <AppConfirm :show="showDeleteConfirm" title="Eliminar documento" message="¿Eliminar este documento? No se puede deshacer." confirm-text="Eliminar" variant="danger" @confirm="remove" @cancel="showDeleteConfirm = false" />
+    </div>
   </div>
 </template>

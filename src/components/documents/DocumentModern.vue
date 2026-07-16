@@ -3,125 +3,97 @@ import type { DocumentData, SectionConfig } from '@/types/document'
 import { useDocumentTemplate } from '@/composables/useDocumentTemplate'
 
 const props = defineProps<{ doc: DocumentData; sections: SectionConfig[] }>()
-const { sc, typeTitle: t, subtotal, tax, total, enabled, fontFamilyOf, formatCurrency } = useDocumentTemplate(props.doc, props.sections)
+const { sc, accent, typeTitle, subtotal, total, taxRows, enabled, fontFamilyOf, formatCurrency, formatDate } = useDocumentTemplate(props.doc, props.sections)
 </script>
 
 <template>
-  <div class="document-page" :style="{ fontFamily: fontFamilyOf() }">
-    <!-- Header row: logo + type badge -->
-    <div v-if="enabled('company')" class="flex items-start justify-between mb-8">
-      <div :class="['flex items-center gap-3', sc.logoPosition === 'right' ? 'order-1' : '']">
-        <img v-if="doc.company.logo" :src="doc.company.logo" class="h-10 w-auto" alt="Logo" />
-        <div v-else class="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-base" :style="{ backgroundColor: sc.accentColor }">F</div>
+  <article class="document-page text-[9px] leading-relaxed text-slate-900" :style="{ fontFamily: fontFamilyOf() }">
+    <header class="flex items-start justify-between gap-8 mb-5">
+      <div v-if="enabled('company')" class="flex items-center gap-4">
+        <div class="h-16 w-16 rounded-full border flex items-center justify-center" :style="{ backgroundColor: `${accent}10`, borderColor: `${accent}30` }">
+          <img v-if="doc.company.logo" :src="doc.company.logo" class="h-12 w-12 object-contain" alt="Logo de la empresa" />
+          <span v-else class="text-2xl font-bold" :style="{ color: accent }">{{ doc.company.name?.charAt(0) || 'D' }}</span>
+        </div>
         <div>
-          <p class="font-bold text-sm">{{ doc.company.name }}</p>
-          <p v-if="sc.showRfc" class="text-[11px] text-neutral-500">{{ doc.company.rfc }}</p>
+          <h1 class="text-sm font-extrabold uppercase">{{ doc.company.name }}</h1>
+          <p v-if="sc.showRfc && doc.company.rfc">RFC: {{ doc.company.rfc }}</p>
+          <p v-if="doc.company.address">{{ doc.company.address }}</p>
+          <p>{{ sc.showPhone ? doc.company.phone : '' }}<span v-if="sc.showPhone && doc.company.phone && sc.showEmail && doc.company.email"> &nbsp;|&nbsp; </span>{{ sc.showEmail ? doc.company.email : '' }}</p>
+          <p v-if="doc.company.website">{{ doc.company.website }}</p>
         </div>
       </div>
-      <div class="text-right">
-        <span class="inline-block px-3 py-1 text-white text-[10px] font-bold uppercase tracking-wider rounded-full mb-1" :style="{ backgroundColor: sc.accentColor }">{{ t(doc.type) }}</span>
-        <p v-if="sc.showDocumentNumber" class="text-xs text-neutral-500">No. {{ doc.number }}</p>
-      </div>
-    </div>
 
-    <!-- Contact strip -->
-    <div v-if="enabled('company') && (doc.company.address || (sc.showPhone && doc.company.phone) || (sc.showEmail && doc.company.email) || doc.company.website)" class="rounded-lg px-4 py-3 mb-6 text-[11px] flex flex-wrap gap-x-6 gap-y-1" :style="{ backgroundColor: sc.accentColor + '12', color: sc.accentColor }">
-      <span v-if="doc.company.address">{{ doc.company.address }}</span>
-      <span v-if="sc.showPhone && doc.company.phone">{{ doc.company.phone }}</span>
-      <span v-if="sc.showEmail && doc.company.email">{{ doc.company.email }}</span>
-      <span v-if="doc.company.website">{{ doc.company.website }}</span>
-    </div>
+      <div class="min-w-40 text-right">
+        <h2 class="text-base font-extrabold uppercase" :style="{ color: accent }">{{ typeTitle(doc.type) }}</h2>
+        <p v-if="sc.showDocumentNumber" class="mt-1 rounded-md px-5 py-1.5 text-center font-bold text-white" :style="{ backgroundColor: accent }">{{ doc.number }}</p>
+        <p v-if="sc.showDate" class="mt-2">Fecha: {{ formatDate(doc.date) }}</p>
+        <p v-if="doc.expiryDate">Válida hasta: {{ formatDate(doc.expiryDate) }}</p>
+        <p>Moneda: {{ sc.currencySymbol === '$' ? 'MXN' : sc.currencySymbol }}</p>
+      </div>
+    </header>
 
-    <!-- Client + date row -->
-    <div v-if="enabled('client')" class="flex justify-between mb-6">
-      <div>
-        <p class="text-[10px] font-bold uppercase tracking-wider mb-1" :style="{ color: sc.accentColor }">Cliente</p>
-        <p class="text-sm font-bold">{{ doc.client.name }}</p>
-        <p v-if="sc.showRfc" class="text-xs text-neutral-600">RFC {{ doc.client.rfc }}</p>
-        <p v-if="doc.client.address" class="text-xs text-neutral-600">{{ doc.client.address }}</p>
-        <p v-if="(sc.showPhone && doc.client.phone) || (sc.showEmail && doc.client.email)" class="text-xs text-neutral-600">
-          {{ sc.showPhone && doc.client.phone ? doc.client.phone : '' }}{{ sc.showPhone && doc.client.phone && sc.showEmail && doc.client.email ? ' · ' : '' }}{{ sc.showEmail && doc.client.email ? doc.client.email : '' }}
-        </p>
+    <section class="grid grid-cols-2 gap-3 mb-4">
+      <div v-if="enabled('client')" class="rounded-xl border border-slate-200 p-3 shadow-sm">
+        <h3 class="mb-2 flex items-center gap-2 text-xs font-bold" :style="{ color: accent }"><span class="text-sm">♙</span> Cliente</h3>
+        <p class="font-bold">{{ doc.client.name }}</p>
+        <p v-if="sc.showRfc">RFC: {{ doc.client.rfc }}</p>
+        <p v-if="doc.client.address">{{ doc.client.address }}</p>
+        <p v-if="sc.showPhone && doc.client.phone">{{ doc.client.phone }}</p>
+        <p v-if="sc.showEmail && doc.client.email">{{ doc.client.email }}</p>
       </div>
-      <div class="text-right text-xs text-neutral-500">
-        <p v-if="sc.showDate">Fecha: <span class="font-medium" :style="{ color: sc.accentColor }">{{ doc.date }}</span></p>
-        <p v-if="doc.expiryDate">Vigencia: <span class="font-medium" :style="{ color: sc.accentColor }">{{ doc.expiryDate }}</span></p>
+      <div v-if="enabled('payment-terms') && doc.paymentTerms" class="rounded-xl border border-slate-200 p-3 shadow-sm">
+        <h3 class="mb-2 flex items-center gap-2 text-xs font-bold" :style="{ color: accent }"><span class="text-sm">▣</span> Condiciones</h3>
+        <p class="whitespace-pre-line">{{ doc.paymentTerms }}</p>
+        <p v-if="doc.expiryDate" class="mt-2"><strong>Validez:</strong> {{ formatDate(doc.expiryDate) }}</p>
       </div>
-    </div>
+    </section>
 
-    <!-- Items table -->
-    <table v-if="enabled('items')" class="w-full text-xs mb-6 border-collapse">
-      <thead>
-        <tr :style="{ backgroundColor: sc.accentColor + '12' }">
-          <th class="py-2.5 px-3 text-left font-bold uppercase tracking-wider rounded-l-lg" :style="{ color: sc.accentColor }">#</th>
-          <th class="py-2.5 px-3 text-left font-bold uppercase tracking-wider" :style="{ color: sc.accentColor }">Descripción</th>
-          <th class="py-2.5 px-3 text-right font-bold uppercase tracking-wider" :style="{ color: sc.accentColor }">Cant</th>
-          <th class="py-2.5 px-3 text-right font-bold uppercase tracking-wider" :style="{ color: sc.accentColor }">P/U</th>
-          <th class="py-2.5 px-3 text-right font-bold uppercase tracking-wider rounded-r-lg" :style="{ color: sc.accentColor }">Importe</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, i) in doc.items" :key="item.id" class="border-b border-neutral-100">
-          <td class="py-2.5 px-3 text-neutral-400">{{ i + 1 }}</td>
-          <td class="py-2.5 px-3">
-            <span class="text-neutral-400 text-[10px]" v-if="item.code">{{ item.code }} </span>
-            <span class="font-medium">{{ item.description || '—' }}</span>
-          </td>
-          <td class="py-2.5 px-3 text-right tabular-nums">{{ item.quantity }}</td>
-          <td class="py-2.5 px-3 text-right tabular-nums">{{ formatCurrency(item.unitPrice, sc.currencySymbol) }}</td>
-          <td class="py-2.5 px-3 text-right tabular-nums font-semibold">{{ formatCurrency(item.quantity * item.unitPrice, sc.currencySymbol) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <section v-if="enabled('items')" class="overflow-hidden rounded-xl border border-slate-200 mb-4">
+      <table class="w-full table-fixed border-collapse text-[8px]">
+        <thead class="text-white" :style="{ backgroundColor: accent }">
+          <tr>
+            <th class="px-3 py-2 text-left">Producto / Servicio</th>
+            <th class="w-14 px-2 py-2">Cantidad</th>
+            <th class="w-24 px-2 py-2 text-right">Precio unitario</th>
+            <th class="w-14 px-2 py-2">% IVA</th>
+            <th class="w-24 px-3 py-2 text-right">Importe</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in doc.items" :key="item.id" class="border-b border-slate-200 last:border-0">
+            <td class="px-3 py-2">
+              <div class="flex items-center gap-2">
+                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full" :style="{ backgroundColor: `${accent}12`, color: accent }">▣</span>
+                <span><strong class="block">{{ item.description || '—' }}</strong><small class="text-slate-500">Código: {{ item.code || '—' }}</small></span>
+              </div>
+            </td>
+            <td class="px-2 py-2 text-center tabular-nums">{{ item.quantity }}</td>
+            <td class="px-2 py-2 text-right tabular-nums">{{ formatCurrency(item.unitPrice, sc.currencySymbol) }}</td>
+            <td class="px-2 py-2 text-center tabular-nums">{{ item.taxRate }}%</td>
+            <td class="px-3 py-2 text-right font-semibold tabular-nums">{{ formatCurrency(item.quantity * item.unitPrice, sc.currencySymbol) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
 
-    <!-- Totals card -->
-    <div v-if="enabled('totals')" class="rounded-lg p-4 mb-6 w-64 ml-auto" :style="{ backgroundColor: sc.accentColor + '12' }">
-      <div class="flex justify-between text-xs py-1">
-        <span :style="{ color: sc.accentColor }">Subtotal</span>
-        <span class="tabular-nums font-medium">{{ formatCurrency(subtotal, sc.currencySymbol) }}</span>
-      </div>
-      <div class="flex justify-between text-xs py-1">
-        <span :style="{ color: sc.accentColor }">{{ sc.taxLabel }}</span>
-        <span class="tabular-nums font-medium">{{ formatCurrency(tax, sc.currencySymbol) }}</span>
-      </div>
-      <div class="flex justify-between text-sm font-bold pt-2 mt-1" :style="{ borderTop: `2px solid ${sc.accentColor}` }">
-        <span>TOTAL</span>
-        <span class="tabular-nums text-base">{{ formatCurrency(total, sc.currencySymbol) }}</span>
-      </div>
-    </div>
+    <section v-if="enabled('totals')" class="ml-auto w-56 overflow-hidden rounded-xl border border-slate-200 shadow-sm mb-4">
+      <div class="flex justify-between px-4 py-1.5"><strong>Subtotal</strong><span class="tabular-nums font-semibold">{{ formatCurrency(subtotal, sc.currencySymbol) }}</span></div>
+      <div v-for="row in taxRows" :key="row.rate" class="flex justify-between px-4 py-1.5"><strong>IVA ({{ row.rate }}%)</strong><span class="tabular-nums font-semibold">{{ formatCurrency(row.amount, sc.currencySymbol) }}</span></div>
+      <div class="flex justify-between px-4 py-2 text-sm font-bold text-white" :style="{ backgroundColor: accent }"><span>Total</span><span class="tabular-nums">{{ formatCurrency(total, sc.currencySymbol) }}</span></div>
+    </section>
 
-    <!-- Footer -->
-    <div class="flex gap-4 text-[11px] text-neutral-500">
-      <div v-if="doc.paymentTerms && enabled('payment-terms')" class="flex-1">
-        <p class="font-bold mb-0.5" :style="{ color: sc.accentColor }">Pago</p>
-        <p>{{ doc.paymentTerms }}</p>
-      </div>
-      <div v-if="doc.bankInfo && enabled('bank-info')" class="flex-1">
-        <p class="font-bold mb-0.5" :style="{ color: sc.accentColor }">Banco</p>
-        <p>{{ doc.bankInfo }}</p>
-      </div>
-    </div>
-    <div v-if="doc.customFields.length && enabled('custom-fields')" class="mt-3 text-[11px] text-neutral-500 flex flex-wrap gap-x-6 gap-y-1">
-      <div v-for="f in doc.customFields.filter(f => f.value)" :key="f.label">
-        <span class="font-medium" :style="{ color: sc.accentColor }">{{ f.label }}:</span> {{ f.value }}
-      </div>
-    </div>
-    <div v-if="doc.notes && enabled('notes')" class="mt-4 text-[11px] text-neutral-500 border-t pt-3" :style="{ borderColor: sc.accentColor + '30' }">
-      {{ doc.notes }}
-    </div>
+    <section class="grid grid-cols-2 gap-6 mb-8">
+      <div v-if="enabled('notes') && doc.notes"><h3 class="mb-1 font-bold" :style="{ color: accent }">Notas</h3><p class="whitespace-pre-line">{{ doc.notes }}</p></div>
+      <div v-if="enabled('bank-info') && doc.bankInfo"><h3 class="mb-1 font-bold" :style="{ color: accent }">Datos bancarios</h3><p class="whitespace-pre-line">{{ doc.bankInfo }}</p></div>
+    </section>
 
-    <!-- Signature -->
-    <div v-if="enabled('signature-client') || enabled('signature-company')" class="mt-12 pt-4 text-[11px] text-neutral-500" :style="{ borderTop: `1px solid ${sc.accentColor}30` }">
-      <div class="flex justify-between">
-        <div v-if="enabled('signature-client')" class="text-center">
-          <div class="w-36 pt-1 mt-10" :style="{ borderTop: `1px solid ${sc.accentColor}60` }"></div>
-          <p class="mt-1">{{ doc.signatureClientLabel }}</p>
-        </div>
-        <div v-if="enabled('signature-company')" class="text-center">
-          <div class="w-36 pt-1 mt-10" :style="{ borderTop: `1px solid ${sc.accentColor}60` }"></div>
-          <p class="mt-1">{{ doc.signatureCompanyLabel }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
+    <section v-if="doc.customFields.some(field => field.value) && enabled('custom-fields')" class="mb-6 grid grid-cols-2 gap-2 text-slate-600">
+      <p v-for="field in doc.customFields.filter(field => field.value)" :key="field.label"><strong :style="{ color: accent }">{{ field.label }}:</strong> {{ field.value }}</p>
+    </section>
+
+    <footer v-if="enabled('signature-client') || enabled('signature-company')" class="mt-8 flex justify-between gap-12">
+      <div v-if="enabled('signature-client')" class="w-48 rounded-xl border p-5 text-center" :style="{ borderColor: `${accent}40`, color: accent }">{{ doc.signatureClientLabel }}</div>
+      <div v-if="enabled('signature-company')" class="w-48 rounded-xl border p-5 text-center" :style="{ borderColor: `${accent}40`, color: accent }">{{ doc.signatureCompanyLabel }}<p class="mt-1 text-slate-700">{{ doc.company.name }}</p></div>
+    </footer>
+  </article>
 </template>
