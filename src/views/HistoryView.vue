@@ -66,7 +66,7 @@ onMounted(() => documents.loadAll())
 </script>
 
 <template>
-  <div class="h-full overflow-y-auto">
+  <div class="history-view h-full overflow-y-auto">
     <div class="max-w-[1000px] mx-auto px-4 py-5 sm:px-6 sm:py-6">
       <h1 class="text-xl font-bold mb-1" style="color: #0f172a;">Historial</h1>
       <p class="text-sm mb-5" style="color: #94a3b8;">Todos los documentos guardados.</p>
@@ -158,6 +158,9 @@ onMounted(() => documents.loadAll())
       </AppModal>
 
       <AppConfirm :show="showDeleteConfirm" title="Eliminar documento" message="¿Eliminar este documento? No se puede deshacer." confirm-text="Eliminar" variant="danger" @confirm="remove" @cancel="showDeleteConfirm = false" />
+    </div>
+    <div v-if="previewDoc" class="print-sheet print-only">
+      <PrintPreview :doc="previewDoc" :sections="settings.sections" />
     </div>
   </div>
 </template>

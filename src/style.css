@@ -101,9 +101,47 @@ main textarea {
 
 @media print {
   .no-print { display: none !important; }
-  @page { margin: 15mm; }
-  html, body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; height: auto; overflow: visible; }
-  .document-page { box-shadow: none; margin: 0; padding: 0; width: 100%; min-height: 100vh; background: white; }
+  @page { margin: 10mm; }
+  html, body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; height: auto !important; overflow: visible !important; }
+  body.printing * { visibility: hidden !important; }
+  body.printing .print-sheet, body.printing .print-sheet * { visibility: visible !important; }
+  body.printing .app-shell,
+  body.printing .app-main,
+  body.printing .editor-view,
+  body.printing .editor-canvas,
+  body.printing .print-stage,
+  body.printing .print-frame,
+  body.printing .history-view {
+    display: block !important;
+    position: static !important;
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: white !important;
+  }
+  body.printing .history-view > :not(.print-sheet) { display: none !important; }
+  body.printing .print-sheet {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: white !important;
+  }
+  .document-page { box-sizing: border-box; box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: 100% !important; min-height: 0 !important; border-radius: 0 !important; background: white !important; }
 }
 
 .document-page {
@@ -113,6 +151,28 @@ main textarea {
   background: white;
 }
 @media (min-width: 1024px) { .document-page { padding: 40px; } }
+
+.document-page thead { display: table-header-group; }
+.document-page tr,
+.document-page footer,
+.document-page .print-avoid-break { break-inside: avoid; page-break-inside: avoid; }
+.print-only { display: none; }
+.document-page.pdf-exporting { box-sizing: border-box; max-width: none; border-radius: 0; box-shadow: none; background: #ffffff !important; color: #0f172a !important; }
+.pdf-exporting .bg-white { background-color: #ffffff !important; }
+.pdf-exporting .text-white { color: #ffffff !important; }
+.pdf-exporting .text-slate-900 { color: #0f172a !important; }
+.pdf-exporting .text-slate-700 { color: #334155 !important; }
+.pdf-exporting .text-slate-600 { color: #475569 !important; }
+.pdf-exporting .text-slate-500 { color: #64748b !important; }
+.pdf-exporting .text-slate-400 { color: #94a3b8 !important; }
+.pdf-exporting .border-slate-600 { border-color: #475569 !important; }
+.pdf-exporting .border-slate-300 { border-color: #cbd5e1 !important; }
+.pdf-exporting .border-slate-200 { border-color: #e2e8f0 !important; }
+.pdf-exporting thead.text-white th { border-color: rgba(255, 255, 255, 0.2); }
+
+@media print {
+  .print-only { display: block !important; }
+}
 
 .page-enter-active, .page-leave-active { transition: opacity 0.15s ease; }
 .page-enter-from, .page-leave-to { opacity: 0; }

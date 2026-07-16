@@ -16,10 +16,11 @@ const router = useRouter()
 const editor = useEditorStore()
 const documents = useDocumentsStore()
 const settings = useSettingsStore()
-const { printDocument } = usePrint()
+const { printDocument, downloadPdf } = usePrint()
 const toast = useToast()
 
 const activePanel = ref<string | null>('client')
+const exporting = ref(false)
 
 const docTypes = [
   { value: 'invoice', label: 'Factura' },
@@ -63,6 +64,20 @@ async function save() {
   }
 }
 
+async function exportPdf() {
+  const page = document.querySelector<HTMLElement>('.print-sheet .document-page')
+  if (!page) return
+  exporting.value = true
+  try {
+    await downloadPdf(page, editor.doc.paperSize, editor.doc.number)
+    toast.show('PDF descargado', 'success')
+  } catch (error) {
+    toast.show((error as Error).message || 'No se pudo generar el PDF', 'error')
+  } finally {
+    exporting.value = false
+  }
+}
+
 function onClientUpdate(field: keyof ClientData, value: string) {
   editor.doc.client[field] = value
 }
@@ -82,7 +97,7 @@ watch(() => editor.doc.type, (t) => editor.generateNumber(t))
 </script>
 
 <template>
-  <div class="h-full flex flex-col overflow-hidden">
+  <div class="editor-view h-full flex flex-col overflow-hidden">
     <!-- Top bar -->
     <div class="neu-raised flex flex-wrap items-center gap-3 px-3 py-3 rounded-t-3xl shrink-0 no-print sm:px-4">
       <button @click="router.push('/')" class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium hover:bg-surface-hover transition-colors" style="color: #475569;">
@@ -109,6 +124,9 @@ watch(() => editor.doc.type, (t) => editor.generateNumber(t))
         <button @click="printDocument(editor.doc.paperSize)" class="px-4 py-2 text-sm font-medium rounded-lg border border-border text-text-secondary hover:bg-surface-hover transition-all">
           Imprimir
         </button>
+        <button @click="exportPdf" :disabled="exporting" class="px-4 py-2 text-sm font-medium rounded-lg border border-border text-text-secondary hover:bg-surface-hover transition-all disabled:opacity-50">
+          {{ exporting ? 'Generando…' : 'Descargar PDF' }}
+        </button>
         <button aria-label="Más acciones" class="neu-control w-8 h-8 flex items-center justify-center rounded-xl text-text-muted">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
         </button>
@@ -116,7 +134,7 @@ watch(() => editor.doc.type, (t) => editor.generateNumber(t))
     </div>
 
     <!-- Canvas -->
-    <div class="flex-1 flex flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+    <div class="editor-canvas flex-1 flex flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
       <!-- Left panels -->
       <div class="neu-raised order-1 mx-3 mt-3 max-h-52 overflow-y-auto rounded-2xl no-print lg:order-none lg:mb-3 lg:mr-0 lg:w-72 lg:shrink-0 lg:max-h-none">
         <!-- Sections list -->
@@ -138,15 +156,18 @@ watch(() => editor.doc.type, (t) => editor.generateNumber(t))
       </div>
 
       <!-- Center: Doc preview -->
-      <div class="order-3 flex-1 overflow-y-auto p-3 sm:p-6 lg:order-none">
-        <div class="max-w-[700px] mx-auto">
-          <div class="bg-white rounded-2xl overflow-hidden shadow-[10px_10px_22px_#c1c9d4,-10px_-10px_22px_#fff]">
+      <div class="print-stage order-3 flex-1 overflow-y-auto p-3 sm:p-6 lg:order-none">
+        <div class="print-frame max-w-[700px] mx-auto">
+          <div class="print-sheet bg-white rounded-2xl overflow-hidden shadow-[10px_10px_22px_#c1c9d4,-10px_-10px_22px_#fff]">
             <PrintPreview :doc="editor.doc" :sections="settings.sections" />
           </div>
-          <div class="mt-4 flex justify-center no-print">
+          <div class="mt-4 flex flex-wrap justify-center gap-2 no-print">
             <button @click="printDocument(editor.doc.paperSize)" class="neu-control flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl text-text-secondary">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9V3h12v6M6 9h12M6 9H4a2 2 0 00-2 2v6h4v4h12v-4h4v-6a2 2 0 00-2-2h-2M6 15h12" /></svg>
-              Imprimir / PDF
+              Imprimir
+            </button>
+            <button @click="exportPdf" :disabled="exporting" class="neu-control flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl text-text-secondary disabled:opacity-50">
+              {{ exporting ? 'Generando…' : 'Descargar PDF' }}
             </button>
           </div>
         </div>
