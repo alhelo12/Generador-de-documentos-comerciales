@@ -4,14 +4,14 @@ const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 </script>
 
 <template>
-  <div class="flex flex-col gap-1.5">
-    <label v-if="label" class="text-xs font-semibold text-text-secondary">{{ label }}</label>
+  <div class="flex flex-col gap-2">
+    <label v-if="label" class="text-[11px] font-bold uppercase tracking-wider text-text-muted">{{ label }}</label>
     <input
       :type="type ?? 'text'"
       :value="modelValue"
       :placeholder="placeholder"
       @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-      class="neu-pressed w-full px-3.5 py-2.5 text-sm rounded-xl text-text placeholder:text-text-muted outline-none focus:ring-2 focus:ring-accent/20"
+      class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text placeholder:text-text-muted"
     />
   </div>
 </template>

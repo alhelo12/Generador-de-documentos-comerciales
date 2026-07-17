@@ -22,14 +22,14 @@ const ivaLabel = computed(() => {
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
-          <tr class="border-b border-border" style="color: #94a3b8;">
-            <th class="py-2 pr-1.5 font-semibold text-[10px] uppercase text-center w-5">#</th>
-            <th class="py-2 pr-1.5 font-semibold text-[10px] uppercase text-left">Código</th>
-            <th class="py-2 pr-1.5 font-semibold text-[10px] uppercase text-left">Descripción</th>
-            <th class="py-2 pr-1.5 font-semibold text-[10px] uppercase text-right w-14">Cant.</th>
-            <th class="py-2 pr-1.5 font-semibold text-[10px] uppercase text-right w-20">P/U</th>
-            <th class="py-2 pr-1.5 font-semibold text-[10px] uppercase text-right w-14">IVA %</th>
-            <th class="py-2 font-semibold text-[10px] uppercase text-right w-20">Importe</th>
+          <tr class="border-b border-black/[0.04]">
+            <th class="py-2 pr-1.5 font-bold text-[10px] uppercase text-center w-5 text-text-muted">#</th>
+            <th class="py-2 pr-1.5 font-bold text-[10px] uppercase text-left text-text-muted">Codigo</th>
+            <th class="py-2 pr-1.5 font-bold text-[10px] uppercase text-left text-text-muted">Descripcion</th>
+            <th class="py-2 pr-1.5 font-bold text-[10px] uppercase text-right w-14 text-text-muted">Cant.</th>
+            <th class="py-2 pr-1.5 font-bold text-[10px] uppercase text-right w-20 text-text-muted">P/U</th>
+            <th class="py-2 pr-1.5 font-bold text-[10px] uppercase text-right w-14 text-text-muted">IVA %</th>
+            <th class="py-2 font-bold text-[10px] uppercase text-right w-20 text-text-muted">Importe</th>
             <th class="py-2 w-6"></th>
           </tr>
         </thead>
@@ -47,18 +47,18 @@ const ivaLabel = computed(() => {
         </tbody>
       </table>
     </div>
-    <button @click="emit('add')" class="text-xs font-semibold text-accent hover:text-accent-hover transition-colors">+ Agregar línea</button>
+    <button @click="emit('add')" class="text-xs font-bold text-accent hover:text-accent-hover transition-colors">+ Agregar linea</button>
 
-    <div class="border-t border-border pt-3 space-y-1.5 text-sm">
-      <div class="flex justify-between" style="color: #475569;">
+    <div class="border-t border-black/[0.04] pt-3 space-y-2 text-sm">
+      <div class="flex justify-between text-text-secondary">
         <span>Subtotal</span>
-        <span class="tabular-nums font-medium">{{ formatCurrency(subtotal, sym()) }}</span>
+        <span class="tabular-nums font-semibold">{{ formatCurrency(subtotal, sym()) }}</span>
       </div>
-      <div class="flex justify-between" style="color: #475569;">
+      <div class="flex justify-between text-text-secondary">
         <span>{{ ivaLabel }}</span>
-        <span class="tabular-nums font-medium">{{ formatCurrency(taxAmount, sym()) }}</span>
+        <span class="tabular-nums font-semibold">{{ formatCurrency(taxAmount, sym()) }}</span>
       </div>
-      <div class="flex justify-between text-base font-bold border-t border-border pt-2" style="color: #0f172a;">
+      <div class="flex justify-between text-base font-extrabold border-t border-black/[0.04] pt-2.5 text-text">
         <span>Total</span>
         <span class="tabular-nums">{{ formatCurrency(total, sym()) }}</span>
       </div>

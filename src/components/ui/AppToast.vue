@@ -22,11 +22,11 @@ defineExpose({ show })
     <Transition name="toast">
       <div
         v-if="visible"
-        class="neu-raised fixed top-4 right-4 z-[100] px-4 py-3 rounded-2xl text-sm font-medium max-w-sm"
+        class="glass-raised fixed top-4 right-4 z-[100] px-5 py-3.5 rounded-2xl text-sm font-bold max-w-sm"
         :class="[
-          type === 'success' ? 'bg-success-light text-green-800 border-green-200' : '',
-          type === 'error' ? 'bg-danger-light text-red-800 border-red-200' : '',
-          type === 'info' ? 'bg-accent-light text-blue-800 border-blue-200' : '',
+          type === 'success' ? 'text-success border border-success/20' : '',
+          type === 'error' ? 'text-danger border border-danger/20' : '',
+          type === 'info' ? 'text-accent border border-accent/20' : '',
         ]"
       >
         {{ message }}

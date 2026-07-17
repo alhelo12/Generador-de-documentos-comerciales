@@ -31,15 +31,15 @@ watch(() => props.show, async (v) => {
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="emit('close')">
-        <div class="absolute inset-0 bg-slate-700/20 backdrop-blur-sm" />
-        <div :class="[maxWidth ?? 'max-w-4xl', 'neu-raised w-full max-h-[90vh] overscroll-contain overflow-y-auto rounded-3xl relative']">
-          <div v-if="title" class="flex items-center justify-between px-5 py-4 border-b border-border">
-            <h2 class="text-base font-semibold" style="color: #0f172a;">{{ title }}</h2>
-            <button @click="emit('close')" class="neu-control w-8 h-8 flex items-center justify-center rounded-xl text-text-muted hover:text-text" aria-label="Cerrar">
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-md" />
+        <div :class="[maxWidth ?? 'max-w-4xl', 'glass-raised w-full max-h-[90vh] overscroll-contain overflow-y-auto rounded-2xl relative']">
+          <div v-if="title" class="flex items-center justify-between px-6 py-5 border-b border-black/[0.04]">
+            <h2 class="text-base font-bold text-text">{{ title }}</h2>
+            <button @click="emit('close')" class="glass-control w-8 h-8 flex items-center justify-center rounded-xl text-text-muted hover:text-text" aria-label="Cerrar">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
-          <div ref="contentRef" class="p-5"><slot /></div>
+          <div ref="contentRef" class="p-6"><slot /></div>
         </div>
       </div>
     </Transition>
