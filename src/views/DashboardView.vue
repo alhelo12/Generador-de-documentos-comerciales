@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDocumentsStore } from '@/stores/documents'
 import { useSettingsStore } from '@/stores/settings'
@@ -14,6 +14,7 @@ const settings = useSettingsStore()
 const editor = useEditorStore()
 const { formatCurrency, docTotal } = useDocumentCalculations()
 const loading = ref(true)
+const dashboardSearch = ref('')
 
 const statusLabels: Record<string, string> = { 'draft': 'Borrador', 'sent': 'Enviado', 'paid': 'Pagado', 'cancelled': 'Cancelado' }
 const statusVariants: Record<string, 'success' | 'warning' | 'danger' | 'default'> = { 'draft': 'default', 'sent': 'warning', 'paid': 'success', 'cancelled': 'danger' }
@@ -23,6 +24,19 @@ function totalOf(d: any) { return docTotal(d.items) }
 function openDoc(id: string) { router.push(`/editor/${id}`) }
 
 const recentDocs = ref<any[]>([])
+const filteredRecent = computed(() => {
+  const query = dashboardSearch.value.trim().toLowerCase()
+  if (!query) return recentDocs.value
+  return recentDocs.value.filter(d => d.number.toLowerCase().includes(query) || d.client.name.toLowerCase().includes(query))
+})
+
+async function retryLoad() {
+  docs.loaded = false
+  loading.value = true
+  await docs.loadAll()
+  recentDocs.value = docs.docs.slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 6)
+  loading.value = false
+}
 
 onMounted(async () => {
   await docs.loadAll()
@@ -33,6 +47,7 @@ onMounted(async () => {
 })
 
 function animateIn() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   gsap.fromTo('.dash-greeting', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' })
   gsap.fromTo('.stat-card', { opacity: 0, y: 24, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.08, ease: 'power3.out', delay: 0.15 })
   gsap.fromTo('.content-reveal', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: 'power3.out', delay: 0.4 })
@@ -62,17 +77,13 @@ function quickCreate(type: string) {
             <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-text leading-[1.1]" style="max-width: 700px;">
               {{ getGreeting() }}
             </h1>
-            <p class="text-sm mt-2 text-text-secondary max-w-md">Resumen de tu actividad documental en tiempo real.</p>
+            <p class="text-sm mt-2 text-text-secondary max-w-md">Crea y gestiona tus documentos comerciales desde un solo lugar.</p>
           </div>
           <div class="flex items-center gap-3">
             <div class="relative">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              <input aria-label="Buscar documentos" placeholder="Buscar documentos..." class="pl-9 pr-4 py-2.5 text-sm rounded-xl glass-control text-text placeholder:text-text-muted w-full sm:w-64" />
+              <input v-model="dashboardSearch" aria-label="Buscar por número o cliente" placeholder="Buscar por número o cliente..." class="pl-9 pr-4 py-2.5 text-sm rounded-xl glass-control text-text placeholder:text-text-muted w-full sm:w-64" />
             </div>
-            <div class="glass-control w-10 h-10 flex items-center justify-center rounded-xl text-text-secondary relative">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-            </div>
-            <div class="glass-control w-10 h-10 rounded-xl flex items-center justify-center text-accent text-xs font-bold">JD</div>
           </div>
         </div>
       </div>
@@ -90,7 +101,7 @@ function quickCreate(type: string) {
             { label: 'Facturas', count: docs.stats.invoices, total: docs.stats.invoiceTotal, icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', accent: 'text-accent', glow: 'shadow-[0_0_20px_rgba(108,140,255,0.15)]' },
             { label: 'Cotizaciones', count: docs.stats.quotes, total: docs.stats.quoteTotal, icon: 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z', accent: 'text-success', glow: 'shadow-[0_0_20px_rgba(52,211,153,0.15)]' },
             { label: 'Remisiones', count: docs.stats.deliveries, total: 0, icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', accent: 'text-orange', glow: 'shadow-[0_0_20px_rgba(251,146,60,0.15)]' },
-            { label: 'Total facturado', count: formatCurrency(docs.stats.invoiceTotal + docs.stats.quoteTotal + 0), total: 'Este mes', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', accent: 'text-purple', glow: 'shadow-[0_0_20px_rgba(167,139,250,0.15)]' },
+             { label: 'Total facturado', count: formatCurrency(docs.stats.invoiceTotal), total: 'Solo facturas', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z', accent: 'text-purple', glow: 'shadow-[0_0_20px_rgba(167,139,250,0.15)]' },
           ]" :key="stat.label" :class="['stat-card glass-raised rounded-2xl p-5 hover-lift cursor-default', stat.glow]">
             <div class="flex items-center gap-2.5 mb-4">
               <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-black/[0.04]">
@@ -129,7 +140,7 @@ function quickCreate(type: string) {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="d in recentDocs" :key="d.id" class="border-b border-black/[0.02] last:border-0 hover:bg-black/[0.02] cursor-pointer transition-colors" @click="openDoc(d.id)">
+                <tr v-for="d in filteredRecent" :key="d.id" class="border-b border-black/[0.02] last:border-0 hover:bg-black/[0.02] cursor-pointer transition-colors" @click="openDoc(d.id)">
                   <td class="py-3.5 px-6 font-semibold text-text">
                     <div class="flex items-center gap-2.5">
                       <div :class="['w-2 h-2 rounded-full', d.type === 'invoice' ? 'bg-accent' : d.type === 'quote' ? 'bg-success' : 'bg-orange']" />
@@ -151,14 +162,11 @@ function quickCreate(type: string) {
                   </td>
                   <td class="py-3.5 px-6">
                     <div class="flex gap-1 justify-center">
-                      <button @click.stop="openDoc(d.id)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-black/[0.06] transition-colors text-text-muted hover:text-text" title="Ver">
+                      <button @click.stop="openDoc(d.id)" aria-label="Ver documento" class="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-black/[0.06] transition-colors text-text-muted hover:text-text" title="Ver">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                       </button>
-                      <button @click.stop="openDoc(d.id)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-black/[0.06] transition-colors text-text-muted hover:text-text" title="Editar">
+                      <button @click.stop="openDoc(d.id)" aria-label="Editar documento" class="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-black/[0.06] transition-colors text-text-muted hover:text-text" title="Editar">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                      </button>
-                      <button @click.stop class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-black/[0.06] transition-colors text-text-muted hover:text-danger" title="Eliminar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                       </button>
                     </div>
                   </td>
@@ -166,8 +174,12 @@ function quickCreate(type: string) {
               </tbody>
             </table>
           </div>
-          <div v-if="!recentDocs.length && !loading" class="text-center py-16 text-sm text-text-muted">
-            No hay documentos recientes.
+          <div v-if="docs.loadError" class="text-center py-12 px-6 text-sm text-danger">
+            <p>{{ docs.loadError }}</p>
+            <button @click="retryLoad" class="mt-3 glass-control px-4 py-2 rounded-xl font-semibold text-text-secondary">Reintentar</button>
+          </div>
+          <div v-else-if="!filteredRecent.length && !loading" class="text-center py-16 text-sm text-text-muted">
+            {{ dashboardSearch ? 'No encontramos documentos con esa búsqueda.' : 'No hay documentos recientes.' }}
           </div>
         </div>
 

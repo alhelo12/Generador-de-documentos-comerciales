@@ -65,6 +65,7 @@ async function remove() {
 onMounted(async () => {
   await documents.loadAll()
   await nextTick()
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   gsap.fromTo('.history-header', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' })
   gsap.fromTo('.history-content', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', delay: 0.15 })
 })
@@ -83,7 +84,7 @@ onMounted(async () => {
       <div class="history-content">
         <div class="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center">
           <div class="glass-pressed flex gap-1 overflow-x-auto p-1 rounded-xl">
-            <button v-for="f in [{v:'all',l:'Todos'},{v:'invoice',l:'Facturas'},{v:'quote',l:'Cotizaciones'},{v:'delivery-note',l:'Remisiones'}]" :key="f.v" @click="filterType = f.v; currentPage = 1" :class="['px-3.5 py-2 text-xs font-bold rounded-lg transition-all duration-200', filterType === f.v ? 'bg-accent/15 text-accent shadow-[0_0_12px_rgba(108,140,255,0.1)]' : 'text-text-muted hover:text-text-secondary']">{{ f.l }}</button>
+            <button v-for="f in [{v:'all',l:'Todos'},{v:'invoice',l:'Facturas'},{v:'quote',l:'Cotizaciones'},{v:'delivery-note',l:'Remisiones'}]" :key="f.v" @click="filterType = f.v; currentPage = 1" :class="['px-3.5 py-2 text-xs font-bold rounded-lg transition-all duration-200', filterType === f.v ? 'bg-accent/15 text-accent shadow-[0_0_12px_rgba(75,110,245,0.1)]' : 'text-text-muted hover:text-text-secondary']">{{ f.l }}</button>
           </div>
           <div class="flex-1 w-full sm:max-w-xs relative">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -128,13 +129,13 @@ onMounted(async () => {
                 </td>
                 <td class="py-3.5 px-6">
                   <div class="flex gap-1 justify-center">
-                    <button @click.stop="preview(d)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-black/[0.06] transition-colors text-text-muted hover:text-text" title="Ver">
+                    <button @click.stop="preview(d)" aria-label="Ver documento" class="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-black/[0.06] transition-colors text-text-muted hover:text-text" title="Ver">
                       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                     </button>
-                    <button @click.stop="editDoc(d.id)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-black/[0.06] transition-colors text-text-muted hover:text-text" title="Editar">
+                    <button @click.stop="editDoc(d.id)" aria-label="Editar documento" class="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-black/[0.06] transition-colors text-text-muted hover:text-text" title="Editar">
                       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                     </button>
-                    <button @click.stop="confirmDelete(d.id)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-black/[0.06] transition-colors text-text-muted hover:text-danger" title="Eliminar">
+                    <button @click.stop="confirmDelete(d.id)" aria-label="Eliminar documento" class="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-black/[0.06] transition-colors text-text-muted hover:text-danger" title="Eliminar">
                       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     </button>
                   </div>
@@ -150,9 +151,9 @@ onMounted(async () => {
 
         <!-- Pagination -->
         <div v-if="totalPages > 1" class="flex items-center justify-center gap-1 mt-6">
-          <button @click="currentPage = Math.max(1, currentPage - 1)" :disabled="currentPage === 1" class="w-9 h-9 flex items-center justify-center rounded-xl text-sm font-bold glass-control text-text-secondary hover:text-text disabled:opacity-30">&lt;</button>
-          <button v-for="p in totalPages" :key="p" @click="currentPage = p" :class="['w-9 h-9 flex items-center justify-center rounded-xl text-sm font-bold transition-all', p === currentPage ? 'bg-accent text-white shadow-[0_0_15px_rgba(108,140,255,0.3)]' : 'glass-control text-text-secondary hover:text-text']">{{ p }}</button>
-          <button @click="currentPage = Math.min(totalPages, currentPage + 1)" :disabled="currentPage === totalPages" class="w-9 h-9 flex items-center justify-center rounded-xl text-sm font-bold glass-control text-text-secondary hover:text-text disabled:opacity-30">&gt;</button>
+          <button @click="currentPage = Math.max(1, currentPage - 1)" aria-label="Página anterior" :disabled="currentPage === 1" class="w-11 h-11 flex items-center justify-center rounded-xl text-sm font-bold glass-control text-text-secondary hover:text-text disabled:opacity-30">&lt;</button>
+          <button v-for="p in totalPages" :key="p" @click="currentPage = p" :aria-label="`Ir a página ${p}`" :aria-current="p === currentPage ? 'page' : undefined" :class="['w-11 h-11 flex items-center justify-center rounded-xl text-sm font-bold transition-all', p === currentPage ? 'bg-accent text-white shadow-[0_0_15px_rgba(75,110,245,0.3)]' : 'glass-control text-text-secondary hover:text-text']">{{ p }}</button>
+          <button @click="currentPage = Math.min(totalPages, currentPage + 1)" aria-label="Página siguiente" :disabled="currentPage === totalPages" class="w-11 h-11 flex items-center justify-center rounded-xl text-sm font-bold glass-control text-text-secondary hover:text-text disabled:opacity-30">&gt;</button>
         </div>
 
         <!-- Preview Modal -->

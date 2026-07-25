@@ -22,6 +22,9 @@ defineExpose({ show })
     <Transition name="toast">
       <div
         v-if="visible"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
         class="glass-raised fixed top-4 right-4 z-[100] px-5 py-3.5 rounded-2xl text-sm font-bold max-w-sm"
         :class="[
           type === 'success' ? 'text-success border border-success/20' : '',

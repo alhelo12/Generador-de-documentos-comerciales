@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-25T00:00:00.000Z",
+  "title": "Design System: DocGen",
+  "extensions": {
+    "colorMeta": {
+      "signal-blue": {
+        "role": "primary",
+        "displayName": "Azul senal",
+        "canonical": "#4b6ef5",
+        "tonalRamp": ["#17245c", "#24358a", "#3048b8", "#3d5dd8", "#4b6ef5", "#8199f8", "#b7c4fc", "#e0e6fe"]
+      },
+      "paper-bg": {
+        "role": "neutral",
+        "displayName": "Papel frio",
+        "canonical": "#f0f2f5",
+        "tonalRamp": ["#20242b", "#4a505b", "#747b87", "#9fa5ae", "#c8ccd2", "#e1e4e8", "#f0f2f5", "#ffffff"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta grafito",
+        "canonical": "#1a1d26",
+        "tonalRamp": ["#1a1d26", "#2e333f", "#444b59", "#5f6577", "#6b7280", "#9299ac", "#c6cad4", "#f0f2f5"]
+      },
+      "print-ink": {
+        "role": "neutral",
+        "displayName": "Tinta de impresion",
+        "canonical": "#0f172a",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#ffffff"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Inter Tight Display", "purpose": "Titulares principales del dashboard y vistas operativas." },
+      "label": { "displayName": "System Label", "purpose": "Metadatos, nombres de campo y anotaciones tecnicas." },
+      "document-small": { "displayName": "Document Small", "purpose": "Microtipografia de plantillas imprimibles." },
+      "document-title": { "displayName": "Document Title", "purpose": "Titulos de plantillas imprimibles." }
+    },
+    "shadows": [
+      { "name": "card-base", "value": "0 1px 3px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.03)", "purpose": "Separacion minima de tarjetas y paneles." },
+      { "name": "card-hover", "value": "0 8px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04)", "purpose": "Respuesta de elevacion para superficies interactivas." },
+      { "name": "glass-inset", "value": "inset 0 1px 3px rgba(0, 0, 0, 0.06)", "purpose": "Estado presionado de superficies de vidrio." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Transiciones de estado y controles." },
+      { "name": "ease-physical", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Hover lift y escala de tarjetas interactivas." },
+      { "name": "duration-short", "value": "200ms", "purpose": "Feedback inmediato de controles." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Accion principal con Azul senal y elevacion leve.",
+      "html": "<button class=\"ds-btn-primary\">Guardar</button>",
+      "css": ".ds-btn-primary { background: linear-gradient(135deg, #4b6ef5, #7c3aed); color: #fff; padding: 10px 16px; border: 1px solid rgba(255,255,255,.15); border-radius: 14px; font: 700 14px 'Inter Tight', system-ui, sans-serif; transition: transform 250ms cubic-bezier(.4,0,.2,1), box-shadow 250ms cubic-bezier(.4,0,.2,1); } .ds-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(75,110,245,.35); } .ds-btn-primary:focus-visible { outline: 2px solid #4b6ef5; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Accion secundaria de vidrio claro.",
+      "html": "<button class=\"ds-btn-secondary\">Imprimir</button>",
+      "css": ".ds-btn-secondary { background: rgba(255,255,255,.6); color: #5f6577; padding: 10px 16px; border: 1px solid rgba(0,0,0,.06); border-radius: 14px; font: 700 14px 'Inter Tight', system-ui, sans-serif; transition: background 200ms ease, color 200ms ease, box-shadow 200ms ease; } .ds-btn-secondary:hover { background: rgba(255,255,255,.8); color: #1a1d26; box-shadow: 0 2px 8px rgba(0,0,0,.06); } .ds-btn-secondary:focus-visible { outline: 2px solid #4b6ef5; outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de texto con vidrio, borde fino y foco Azul señal.",
+      "html": "<input class=\"ds-input\" placeholder=\"Buscar documentos...\" aria-label=\"Buscar documentos\" />",
+      "css": ".ds-input { width: 100%; background: rgba(255,255,255,.7); color: #1a1d26; padding: 10px 14px; border: 1px solid rgba(0,0,0,.08); border-radius: 14px; font: 400 14px 'Inter Tight', system-ui, sans-serif; transition: border-color 200ms ease, box-shadow 200ms ease; } .ds-input::placeholder { color: #9299ac; } .ds-input:focus { border-color: #4b6ef5; box-shadow: 0 0 0 3px rgba(75,110,245,.1); outline: none; }"
+    },
+    {
+      "name": "Glass Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Contenedor elevado para estadisticas, acciones y paneles.",
+      "html": "<article class=\"ds-card\"><strong>Documentos recientes</strong><p>Ultima actividad guardada.</p></article>",
+      "css": ".ds-card { background: rgba(255,255,255,.7); padding: 20px; border: 1px solid rgba(0,0,0,.05); border-radius: 22px; box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 1px rgba(255,255,255,.5) inset; color: #1a1d26; } .ds-card p { color: #5f6577; font: 400 14px/1.5 'Inter Tight', system-ui, sans-serif; }"
+    },
+    {
+      "name": "Navigation Item",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Item lateral o inferior con estado activo Azul señal.",
+      "html": "<a class=\"ds-nav-item ds-nav-item-active\" href=\"#\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 12l2-2 7-7 7 7M5 10v10h5m4 0h5V10\"/></svg><span>Dashboard</span></a>",
+      "css": ".ds-nav-item { position: relative; display: flex; align-items: center; gap: 12px; color: #5f6577; padding: 10px 12px; border-radius: 14px; font: 700 14px 'Inter Tight', system-ui, sans-serif; text-decoration: none; transition: background 200ms ease, color 200ms ease, transform 200ms ease; } .ds-nav-item:hover { background: rgba(0,0,0,.04); color: #1a1d26; transform: scale(1.02); } .ds-nav-item svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; } .ds-nav-item-active { background: rgba(75,110,245,.08); color: #4b6ef5; } .ds-nav-item-active::before { content: ''; position: absolute; left: 0; width: 3px; height: 20px; border-radius: 0 4px 4px 0; background: #4b6ef5; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El Escritorio de Cristal",
+    "overview": "DocGen se comporta como un escritorio de trabajo claro y preciso: superficies blancas translucidas, jerarquia tipografica firme y controles que responden sin ruido. La transparencia y el desenfoque aportan ligereza, mientras que la elevacion funcional mantiene separados el lienzo, los paneles y las acciones.\n\nLa voz es precisa y tecnica. El color no decora por exceso: el Azul senal aparece para indicar accion, foco y navegacion activa.",
+    "keyCharacteristics": ["Superficies claras con vidrio translucido y desenfoque.", "Azul senal reservado para acciones y estados activos.", "Elevacion baja, bordes finos y separacion funcional.", "Inter Tight con titulares compactos y etiquetas tecnicas.", "Movimiento breve, escalonado y orientado a confirmar cambios."],
+    "rules": [
+      { "name": "The Signal Rule", "body": "El Azul senal debe indicar una decision o un estado; no se usa como relleno decorativo dominante.", "section": "colors" },
+      { "name": "The Compact Header Rule", "body": "Los encabezados deben ser firmes y compactos; la informacion secundaria queda debajo en una escala menor.", "section": "typography" },
+      { "name": "The Functional Elevation Rule", "body": "Una sombra solo debe explicar una capa, un hover o un estado presionado.", "section": "elevation" }
+    ],
+    "dos": ["Do usar Inter Tight y JetBrains Mono solo para numeracion o datos identificadores.", "Do reservar Azul senal para acciones, foco, seleccion y navegacion activa.", "Do mantener fondos claros, vidrio translucido y bordes de bajo contraste.", "Do conservar el preview documental blanco y listo para imprimir."],
+    "donts": ["Don't volver a una paleta oscura sin una decision explicita de producto.", "Don't llenar cada superficie con sombras fuertes, gradientes o glow.", "Don't usar el Azul senal como decoracion sin significado operativo.", "Don't aplicar el vidrio al documento imprimible ni alterar sus colores de salida."]
+  }
+}

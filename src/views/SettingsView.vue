@@ -71,12 +71,14 @@ async function handleImport(e: Event) {
 
 function switchTab(t: typeof tab.value) {
   tab.value = t
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   nextTick(() => {
     gsap.fromTo('.settings-content', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' })
   })
 }
 
 onMounted(() => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   gsap.fromTo('.settings-header', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' })
   gsap.fromTo('.settings-shell', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', delay: 0.1 })
 })
@@ -91,12 +93,12 @@ onMounted(() => {
         <p class="text-sm mt-1.5 text-text-secondary">Ajustes generales de la aplicacion.</p>
       </div>
 
-      <div class="settings-shell grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
+          <div class="settings-shell grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
         <!-- Left Tabs -->
         <div class="glass-pressed flex gap-1 overflow-x-auto rounded-2xl p-1 lg:block lg:space-y-0.5 lg:bg-transparent lg:p-0 lg:shadow-none">
           <button v-for="t in (['company','appearance','fields','data'] as const)" :key="t" @click="switchTab(t)" :class="[
             'flex shrink-0 items-center gap-2.5 px-3.5 py-3 rounded-xl text-sm font-bold transition-all duration-200 text-left lg:w-full',
-            tab === t ? 'bg-accent/15 text-accent shadow-[0_0_15px_rgba(108,140,255,0.08)]' : 'text-text-muted hover:text-text-secondary hover:bg-black/[0.03]',
+            tab === t ? 'bg-accent/15 text-accent shadow-[0_0_15px_rgba(75,110,245,0.08)]' : 'text-text-muted hover:text-text-secondary hover:bg-black/[0.03]',
           ]">
             <svg v-if="t === 'company'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
             <svg v-if="t === 'appearance'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 112.828 2.828L7.343 15.657" /></svg>
@@ -132,27 +134,27 @@ onMounted(() => {
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div class="flex flex-col gap-2">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-text-muted">Nombre</label>
-                <input :value="settings.company.name" @input="settings.company.name = ($event.target as HTMLInputElement).value" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text" />
+                <input aria-label="Nombre de la empresa" :value="settings.company.name" @input="settings.company.name = ($event.target as HTMLInputElement).value" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text" />
               </div>
               <div class="flex flex-col gap-2">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-text-muted">RFC</label>
-                <input :value="settings.company.rfc" @input="settings.company.rfc = ($event.target as HTMLInputElement).value" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text" />
+                <input aria-label="RFC de la empresa" :value="settings.company.rfc" @input="settings.company.rfc = ($event.target as HTMLInputElement).value" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text" />
               </div>
               <div class="flex flex-col gap-2 sm:col-span-2">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-text-muted">Direccion</label>
-                <input :value="settings.company.address" @input="settings.company.address = ($event.target as HTMLInputElement).value" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text" />
+                <input aria-label="Dirección de la empresa" :value="settings.company.address" @input="settings.company.address = ($event.target as HTMLInputElement).value" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text" />
               </div>
               <div class="flex flex-col gap-2">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-text-muted">Telefono</label>
-                <input :value="settings.company.phone" @input="settings.company.phone = ($event.target as HTMLInputElement).value" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text" />
+                <input aria-label="Teléfono de la empresa" :value="settings.company.phone" @input="settings.company.phone = ($event.target as HTMLInputElement).value" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text" />
               </div>
               <div class="flex flex-col gap-2">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-text-muted">Email</label>
-                <input :value="settings.company.email" @input="settings.company.email = ($event.target as HTMLInputElement).value" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text" />
+                <input aria-label="Correo de la empresa" :value="settings.company.email" @input="settings.company.email = ($event.target as HTMLInputElement).value" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text" />
               </div>
               <div class="flex flex-col gap-2 sm:col-span-2">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-text-muted">Sitio web</label>
-                <input :value="settings.company.website" @input="settings.company.website = ($event.target as HTMLInputElement).value" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text" />
+                <input aria-label="Sitio web de la empresa" :value="settings.company.website" @input="settings.company.website = ($event.target as HTMLInputElement).value" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text" />
               </div>
             </div>
 
@@ -171,8 +173,8 @@ onMounted(() => {
                 <tbody>
                   <tr v-for="t in numberTypes" :key="t.v" class="border-b border-black/[0.02] last:border-0">
                     <td class="py-2.5 font-semibold text-text">{{ t.l }}</td>
-                    <td class="py-2.5"><input :value="settings.numberFormat[t.v].prefix" @input="settings.numberFormat[t.v].prefix = ($event.target as HTMLInputElement).value" maxlength="3" class="w-20 px-2.5 py-1.5 text-xs font-bold rounded-lg bg-black/[0.04] border border-black/[0.04] text-text text-center" /></td>
-                    <td class="py-2.5"><input :value="settings.numberFormat[t.v].padding" @input="settings.numberFormat[t.v].padding = Math.max(1, Math.min(10, parseInt(($event.target as HTMLInputElement).value) || 1))" type="number" min="1" max="10" class="w-20 px-2.5 py-1.5 text-xs rounded-lg bg-black/[0.04] border border-black/[0.04] text-text text-center" /></td>
+                    <td class="py-2.5"><input :aria-label="`Prefijo de ${t.l}`" :value="settings.numberFormat[t.v].prefix" @input="settings.numberFormat[t.v].prefix = ($event.target as HTMLInputElement).value" maxlength="3" class="w-20 px-2.5 py-1.5 text-xs font-bold rounded-lg bg-black/[0.04] border border-black/[0.04] text-text text-center" /></td>
+                    <td class="py-2.5"><input :aria-label="`Dígitos de ${t.l}`" :value="settings.numberFormat[t.v].padding" @input="settings.numberFormat[t.v].padding = Math.max(1, Math.min(10, parseInt(($event.target as HTMLInputElement).value) || 1))" type="number" min="1" max="10" class="w-20 px-2.5 py-1.5 text-xs rounded-lg bg-black/[0.04] border border-black/[0.04] text-text text-center" /></td>
                     <td class="py-2.5 text-right font-mono text-xs font-bold text-accent">{{ settings.numberFormat[t.v].prefix }}-{{ '0'.repeat(settings.numberFormat[t.v].padding) }}</td>
                   </tr>
                 </tbody>
@@ -189,13 +191,13 @@ onMounted(() => {
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div class="flex flex-col gap-2">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-text-muted">Estilo predeterminado</label>
-                <select :value="settings.defaultStyle" @change="settings.defaultStyle = ($event.target as HTMLSelectElement).value as TemplateStyle" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text cursor-pointer appearance-none">
+                <select aria-label="Estilo predeterminado" :value="settings.defaultStyle" @change="settings.defaultStyle = ($event.target as HTMLSelectElement).value as TemplateStyle" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text cursor-pointer appearance-none">
                   <option v-for="s in styleOptions" :key="s.value" :value="s.value">{{ s.label }}</option>
                 </select>
               </div>
               <div class="flex flex-col gap-2">
                 <label class="text-[11px] font-bold uppercase tracking-wider text-text-muted">Tamano de papel</label>
-                <select :value="settings.defaultPaperSize" @change="settings.defaultPaperSize = ($event.target as HTMLSelectElement).value as PaperSize" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text cursor-pointer appearance-none">
+                <select aria-label="Tamaño de papel predeterminado" :value="settings.defaultPaperSize" @change="settings.defaultPaperSize = ($event.target as HTMLSelectElement).value as PaperSize" class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text cursor-pointer appearance-none">
                   <option v-for="p in paperOptions" :key="p.value" :value="p.value">{{ p.label }}</option>
                 </select>
               </div>

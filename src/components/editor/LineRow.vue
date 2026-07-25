@@ -29,7 +29,7 @@ const importe = () => props.item.quantity * props.item.unitPrice
     </td>
     <td class="py-2 align-middle w-20 text-right text-xs font-bold tabular-nums pr-1.5 text-text">{{ formatCurrency(importe(), currencySymbol ?? '$') }}</td>
     <td class="py-2 align-middle w-6 text-center">
-      <button v-if="!isOnly" @click="emit('remove')" class="w-5 h-5 flex items-center justify-center rounded hover:bg-black/[0.06] transition-colors text-text-muted hover:text-danger" title="Eliminar">
+      <button v-if="!isOnly" @click="emit('remove')" aria-label="Eliminar linea" class="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-black/[0.06] transition-colors text-text-muted hover:text-danger" title="Eliminar">
         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
       </button>
     </td>

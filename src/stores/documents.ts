@@ -6,11 +6,13 @@ import { get, set, del, keys } from 'idb-keyval'
 export const useDocumentsStore = defineStore('documents', () => {
   const docs = ref<DocumentData[]>([])
   const loaded = ref(false)
+  const loadError = ref('')
 
   const recentDocs = computed(() => docs.value.slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 9))
 
   async function loadAll() {
     if (loaded.value) return
+    loadError.value = ''
     try {
       const allKeys = await keys()
       const all: DocumentData[] = []
@@ -22,7 +24,9 @@ export const useDocumentsStore = defineStore('documents', () => {
       }
       docs.value = all
       loaded.value = true
-    } catch { /* ignore */ }
+    } catch {
+      loadError.value = 'No se pudieron cargar los documentos locales.'
+    }
   }
 
   async function saveDoc(data: DocumentData) {
@@ -71,5 +75,5 @@ export const useDocumentsStore = defineStore('documents', () => {
     }
   })
 
-  return { docs, loaded, recentDocs, stats, loadAll, saveDoc, importDocs, deleteDoc, getById }
+  return { docs, loaded, loadError, recentDocs, stats, loadAll, saveDoc, importDocs, deleteDoc, getById }
 })

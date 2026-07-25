@@ -35,7 +35,7 @@ watch(() => props.show, async (v) => {
         <div :class="[maxWidth ?? 'max-w-4xl', 'glass-raised w-full max-h-[90vh] overscroll-contain overflow-y-auto rounded-2xl relative']">
           <div v-if="title" class="flex items-center justify-between px-6 py-5 border-b border-black/[0.04]">
             <h2 class="text-base font-bold text-text">{{ title }}</h2>
-            <button @click="emit('close')" class="glass-control w-8 h-8 flex items-center justify-center rounded-xl text-text-muted hover:text-text" aria-label="Cerrar">
+            <button @click="emit('close')" class="glass-control w-11 h-11 flex items-center justify-center rounded-xl text-text-muted hover:text-text" aria-label="Cerrar">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>

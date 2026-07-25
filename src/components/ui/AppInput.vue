@@ -1,12 +1,16 @@
 <script setup lang="ts">
+import { useId } from 'vue'
+
 defineProps<{ label?: string; modelValue: string | number; type?: string; placeholder?: string }>()
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
+const inputId = useId()
 </script>
 
 <template>
   <div class="flex flex-col gap-2">
-    <label v-if="label" class="text-[11px] font-bold uppercase tracking-wider text-text-muted">{{ label }}</label>
+    <label v-if="label" :for="inputId" class="text-[11px] font-bold uppercase tracking-wider text-text-muted">{{ label }}</label>
     <input
+      :id="inputId"
       :type="type ?? 'text'"
       :value="modelValue"
       :placeholder="placeholder"

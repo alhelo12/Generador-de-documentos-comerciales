@@ -12,6 +12,7 @@ provide('toast', {
 })
 
 onMounted(() => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   gsap.fromTo('.ambient-orb-1', { x: -200, y: -200 }, { x: 100, y: 80, duration: 20, repeat: -1, yoyo: true, ease: 'sine.inOut' })
   gsap.fromTo('.ambient-orb-2', { x: 200, y: 200 }, { x: -80, y: -60, duration: 25, repeat: -1, yoyo: true, ease: 'sine.inOut' })
 })

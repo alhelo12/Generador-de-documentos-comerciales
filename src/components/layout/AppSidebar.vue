@@ -21,13 +21,14 @@ function isActive(path: string) {
 }
 
 function onNavHover(el: HTMLElement) {
-  gsap.to(el, { scale: 1.05, duration: 0.25, ease: 'back.out(2)' })
+  gsap.to(el, { scale: 1.02, duration: 0.25, ease: 'power3.out' })
 }
 function onNavLeave(el: HTMLElement) {
   gsap.to(el, { scale: 1, duration: 0.2, ease: 'power2.out' })
 }
 
 onMounted(() => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   gsap.fromTo('.sidebar-shell', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.6, ease: 'power3.out' })
 })
 </script>
@@ -56,12 +57,13 @@ onMounted(() => {
         :class="[
           'group flex flex-1 items-center justify-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 md:justify-start',
           isActive(item.path)
-            ? 'bg-accent/15 text-accent shadow-[0_0_20px_rgba(108,140,255,0.1)]'
+             ? 'bg-accent/15 text-accent shadow-[0_0_20px_rgba(75,110,245,0.1)]'
             : 'text-text-secondary hover:text-text hover:bg-black/[0.04]',
         ]"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" :class="isActive(item.path) ? 'text-accent' : 'text-text-muted group-hover:text-text-secondary'"><path stroke-linecap="round" stroke-linejoin="round" :d="item.icon" /></svg>
         <span class="hidden sm:inline">{{ item.label }}</span>
+        <span class="sm:hidden text-[10px] leading-none">{{ item.path === '/' ? 'Inicio' : item.path === '/editor' ? 'Crear' : item.path === '/history' ? 'Historial' : 'Ajustes' }}</span>
         <div v-if="isActive(item.path)" class="absolute left-0 w-[3px] h-5 bg-accent rounded-r-full hidden md:block" />
       </router-link>
     </nav>
