@@ -9,8 +9,8 @@ const emit = defineEmits<{ confirm: []; cancel: [] }>()
   <AppModal :show="show" :title="title ?? 'Confirmar'" max-width="max-w-md" @close="emit('cancel')">
     <p class="text-sm text-text-secondary">{{ message }}</p>
     <div class="flex justify-end gap-2 mt-6">
-      <button @click="emit('cancel')" class="glass-control px-4 py-2 text-sm font-semibold rounded-xl text-text-secondary hover:text-text">{{ cancelText ?? 'Cancelar' }}</button>
-      <button @click="emit('confirm')" :class="['px-4 py-2 text-sm font-bold text-white rounded-xl transition-all', variant === 'danger' ? 'bg-danger hover:bg-red-600' : 'accent-glow']">{{ confirmText ?? 'Confirmar' }}</button>
+      <button @click="emit('cancel')" class="px-5 py-2.5 text-sm font-bold rounded-full bg-surface-hover text-text-secondary hover:text-text">{{ cancelText ?? 'Cancelar' }}</button>
+      <button @click="emit('confirm')" :class="['px-5 py-2.5 text-sm font-bold rounded-full transition-colors', variant === 'danger' ? 'bg-danger text-white hover:bg-red-600' : 'bg-text text-white hover:bg-black']">{{ confirmText ?? 'Confirmar' }}</button>
     </div>
   </AppModal>
 </template>

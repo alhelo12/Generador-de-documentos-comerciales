@@ -13,24 +13,24 @@ const importe = () => props.item.quantity * props.item.unitPrice
   <tr class="border-b border-black/[0.03] last:border-0">
     <td class="py-2 pr-1.5 text-[10px] w-5 text-center align-middle text-text-muted">{{ index + 1 }}</td>
     <td class="py-2 pr-1.5 align-middle">
-      <input :value="item.code" @input="emit('update', 'code', ($event.target as HTMLInputElement).value)" placeholder="Codigo" class="w-full px-2 py-1.5 text-xs rounded-lg bg-black/[0.04] border border-black/[0.04] text-text placeholder:text-text-muted" />
+      <input :value="item.code" @input="emit('update', 'code', ($event.target as HTMLInputElement).value)" placeholder="Codigo" class="w-full px-2 py-1.5 text-xs rounded-full bg-surface-hover text-text placeholder:text-text-muted" />
     </td>
     <td class="py-2 pr-1.5 align-middle">
-      <input :value="item.description" @input="emit('update', 'description', ($event.target as HTMLInputElement).value)" placeholder="Descripcion" class="w-full px-2 py-1.5 text-xs rounded-lg bg-black/[0.04] border border-black/[0.04] text-text placeholder:text-text-muted" />
+      <input :value="item.description" @input="emit('update', 'description', ($event.target as HTMLInputElement).value)" placeholder="Descripcion" class="w-full px-2 py-1.5 text-xs rounded-full bg-surface-hover text-text placeholder:text-text-muted" />
     </td>
     <td class="py-2 pr-1.5 align-middle w-14">
-      <input :value="item.quantity" type="number" min="1" @input="emit('update', 'quantity', Number(($event.target as HTMLInputElement).value))" class="w-full px-2 py-1.5 text-xs rounded-lg bg-black/[0.04] border border-black/[0.04] text-text text-right" />
+      <input :value="item.quantity" type="number" min="1" @input="emit('update', 'quantity', Number(($event.target as HTMLInputElement).value))" class="w-full px-2 py-1.5 text-xs rounded-full bg-surface-hover text-text text-right" />
     </td>
     <td class="py-2 pr-1.5 align-middle w-20">
-      <input :value="item.unitPrice" type="number" min="0" step="0.01" @input="emit('update', 'unitPrice', Number(($event.target as HTMLInputElement).value))" class="w-full px-2 py-1.5 text-xs rounded-lg bg-black/[0.04] border border-black/[0.04] text-text text-right" />
+      <input :value="item.unitPrice" type="number" min="0" step="0.01" @input="emit('update', 'unitPrice', Number(($event.target as HTMLInputElement).value))" class="w-full px-2 py-1.5 text-xs rounded-full bg-surface-hover text-text text-right" />
     </td>
     <td class="py-2 pr-1.5 align-middle w-14">
-      <input :value="item.taxRate" type="number" min="0" max="100" step="0.5" @input="emit('update', 'taxRate', Number(($event.target as HTMLInputElement).value))" class="w-full px-2 py-1.5 text-xs rounded-lg bg-black/[0.04] border border-black/[0.04] text-text text-right" />
+      <input :value="item.taxRate" type="number" min="0" max="100" step="0.5" @input="emit('update', 'taxRate', Number(($event.target as HTMLInputElement).value))" class="w-full px-2 py-1.5 text-xs rounded-full bg-surface-hover text-text text-right" />
     </td>
     <td class="py-2 align-middle w-20 text-right text-xs font-bold tabular-nums pr-1.5 text-text">{{ formatCurrency(importe(), currencySymbol ?? '$') }}</td>
     <td class="py-2 align-middle w-6 text-center">
-      <button v-if="!isOnly" @click="emit('remove')" aria-label="Eliminar linea" class="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-black/[0.06] transition-colors text-text-muted hover:text-danger" title="Eliminar">
-        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+      <button v-if="!isOnly" @click="emit('remove')" class="px-3 py-1.5 text-[11px] font-bold rounded-full text-text-muted hover:text-danger hover:bg-danger/10 transition-colors" title="Quitar esta línea">
+        Quitar
       </button>
     </td>
   </tr>

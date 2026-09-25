@@ -31,15 +31,16 @@ watch(() => props.show, async (v) => {
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="emit('close')">
-        <div class="absolute inset-0 bg-black/30 backdrop-blur-md" />
-        <div :class="[maxWidth ?? 'max-w-4xl', 'glass-raised w-full max-h-[90vh] overscroll-contain overflow-y-auto rounded-2xl relative']">
-          <div v-if="title" class="flex items-center justify-between px-6 py-5 border-b border-black/[0.04]">
-            <h2 class="text-base font-bold text-text">{{ title }}</h2>
-            <button @click="emit('close')" class="glass-control w-11 h-11 flex items-center justify-center rounded-xl text-text-muted hover:text-text" aria-label="Cerrar">
-              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        <div class="absolute inset-0 bg-black/40" />
+        <div :class="[maxWidth ?? 'max-w-4xl', 'phone-card w-full max-h-[90vh] overscroll-contain overflow-y-auto relative']">
+          <div v-if="title" class="flex items-center justify-between px-6 py-4">
+            <h2 class="font-display text-base font-extrabold text-text">{{ title }}</h2>
+            <button @click="emit('close')" class="flex items-center gap-1.5 pl-3 pr-4 py-2 rounded-full bg-surface-hover text-text-secondary hover:text-text text-xs font-bold" aria-label="Cerrar ventana">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              Cerrar
             </button>
           </div>
-          <div ref="contentRef" class="p-6"><slot /></div>
+          <div ref="contentRef" class="px-6 pb-6"><slot /></div>
         </div>
       </div>
     </Transition>

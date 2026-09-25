@@ -20,6 +20,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const sections = ref<SectionConfig[]>(JSON.parse(JSON.stringify(DEFAULT_SECTIONS)))
   const customFields = ref<CustomField[]>([])
   const numberFormat = ref<NumberFormat>(JSON.parse(JSON.stringify(DEFAULT_NUMBER_FORMAT)))
+  const guideSeen = ref(false)
 
   function setLogo(dataUrl: string | undefined) {
     logo.value = dataUrl
@@ -52,6 +53,7 @@ export const useSettingsStore = defineStore('settings', () => {
       sections: sections.value,
       customFields: customFields.value,
       numberFormat: numberFormat.value,
+      guideSeen: guideSeen.value,
     }))
   }
 
@@ -66,6 +68,7 @@ export const useSettingsStore = defineStore('settings', () => {
       if (data.defaultPaperSize) defaultPaperSize.value = data.defaultPaperSize
       if (data.customFields) customFields.value = data.customFields
       if (data.numberFormat) numberFormat.value = data.numberFormat
+      if (data.guideSeen) guideSeen.value = true
       if (data.sections) {
         const savedIds = new Set(data.sections.map((s: SectionConfig) => s.id))
         for (const def of DEFAULT_SECTIONS) {
@@ -78,5 +81,5 @@ export const useSettingsStore = defineStore('settings', () => {
 
   load()
 
-  return { company, logo, defaultStyle, defaultPaperSize, sections, customFields, numberFormat, setLogo, toggleSection, addCustomField, removeCustomField, save, load }
+  return { company, logo, defaultStyle, defaultPaperSize, sections, customFields, numberFormat, guideSeen, setLogo, toggleSection, addCustomField, removeCustomField, save, load }
 })

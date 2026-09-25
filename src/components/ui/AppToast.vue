@@ -25,12 +25,8 @@ defineExpose({ show })
         role="status"
         aria-live="polite"
         aria-atomic="true"
-        class="glass-raised fixed top-4 right-4 z-[100] px-5 py-3.5 rounded-2xl text-sm font-bold max-w-sm"
-        :class="[
-          type === 'success' ? 'text-success border border-success/20' : '',
-          type === 'error' ? 'text-danger border border-danger/20' : '',
-          type === 'info' ? 'text-accent border border-accent/20' : '',
-        ]"
+        class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-full text-sm font-bold max-w-sm bg-text text-white whitespace-nowrap"
+        style="box-shadow: 0 12px 32px rgba(20,20,20,0.25);"
       >
         {{ message }}
       </div>

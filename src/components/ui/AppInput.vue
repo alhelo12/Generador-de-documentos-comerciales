@@ -7,15 +7,15 @@ const inputId = useId()
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
-    <label v-if="label" :for="inputId" class="text-[11px] font-bold uppercase tracking-wider text-text-muted">{{ label }}</label>
+  <div class="flex flex-col gap-1.5">
+    <label v-if="label" :for="inputId" class="text-[11px] font-bold text-text-muted">{{ label }}</label>
     <input
       :id="inputId"
       :type="type ?? 'text'"
       :value="modelValue"
       :placeholder="placeholder"
       @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-      class="w-full px-3.5 py-2.5 text-sm rounded-xl glass-control text-text placeholder:text-text-muted"
+      class="w-full px-4 py-2.5 text-sm rounded-[14px] bg-surface-hover border border-transparent text-text placeholder:text-text-muted"
     />
   </div>
 </template>
