@@ -20,7 +20,7 @@ const { sc, accent, typeTitle, subtotal, enabled, fontFamilyOf, formatCurrency, 
 
       <div class="min-w-44 pt-2 text-right">
         <h2 class="text-sm font-medium uppercase tracking-wide" :style="{ color: accent }">{{ typeTitle(doc.type) }}</h2>
-        <p v-if="sc.showDocumentNumber" class="mt-2 rounded-md border px-4 py-1 text-center text-xs font-medium" :style="{ borderColor: accent, color: accent }">{{ doc.number }}</p>
+        <p v-if="sc.showDocumentNumber" class="mt-2 rounded-sm border px-4 py-1 text-center text-xs font-medium" :style="{ borderColor: accent, color: accent }">{{ doc.number }}</p>
         <p v-if="sc.showDate" class="mt-3">Fecha: {{ formatDate(doc.date) }}</p>
         <p v-if="doc.expiryDate">Válida hasta: {{ formatDate(doc.expiryDate) }}</p>
       </div>

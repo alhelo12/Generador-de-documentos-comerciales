@@ -11,7 +11,7 @@ const { sc, accent, typeTitle, subtotal, total, taxRows, enabled, fontFamilyOf, 
     <header class="flex items-start justify-between gap-8 mb-5">
       <div v-if="enabled('company')" class="flex min-w-0 items-start gap-4">
         <img v-if="doc.company.logo" :src="doc.company.logo" class="h-14 w-14 shrink-0 object-contain" alt="Logo de la empresa" />
-        <div v-else class="h-12 w-12 shrink-0 rounded-lg flex items-center justify-center text-xl font-bold text-white" :style="{ backgroundColor: accent }">
+        <div v-else class="h-12 w-12 shrink-0 rounded-sm flex items-center justify-center text-xl font-bold text-white" :style="{ backgroundColor: accent }">
           {{ doc.company.name?.charAt(0) || 'D' }}
         </div>
         <div class="min-w-0">
@@ -27,7 +27,7 @@ const { sc, accent, typeTitle, subtotal, total, taxRows, enabled, fontFamilyOf, 
 
       <div class="min-w-40 text-right">
         <h2 class="text-lg font-extrabold uppercase tracking-tight" :style="{ color: accent }">{{ typeTitle(doc.type) }}</h2>
-        <p v-if="sc.showDocumentNumber" class="mt-1 rounded-md px-5 py-1.5 text-center text-xs font-bold text-white" :style="{ backgroundColor: accent }">{{ doc.number }}</p>
+        <p v-if="sc.showDocumentNumber" class="mt-1 rounded-sm px-5 py-1.5 text-center text-xs font-bold text-white" :style="{ backgroundColor: accent }">{{ doc.number }}</p>
         <p v-if="sc.showDate" class="mt-2">Fecha: {{ formatDate(doc.date) }}</p>
         <p v-if="doc.expiryDate">Válida hasta: {{ formatDate(doc.expiryDate) }}</p>
         <p>Moneda: {{ sc.currencySymbol === '$' ? 'MXN' : sc.currencySymbol }}</p>

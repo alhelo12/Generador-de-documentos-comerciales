@@ -9,16 +9,16 @@ export const TYPE_TITLES: Record<string, string> = {
 }
 
 export const FONT_MAP: Record<string, string> = {
-  'classic-serif': '"Source Serif 4", serif',
-  'modern-sans': '"Plus Jakarta Sans", sans-serif',
-  'minimal-sans': '"Inter Tight", sans-serif',
+  'classic-serif': '"Source Serif 4", Georgia, serif',
+  'modern-sans': '"Archivo", "Inter Tight", system-ui, sans-serif',
+  'minimal-sans': '"Archivo", "Inter Tight", system-ui, sans-serif',
 }
 
 export function useDocumentTemplate(doc: DocumentData, sections: SectionConfig[]) {
   const { formatCurrency } = useDocumentCalculations()
   const sc = doc.styleConfig
   const accent = computed(() => sc.accentColor === '#2d2d2d'
-    ? ({ classic: '#173b78', modern: '#2f8f43', minimal: '#5b21b6' }[doc.style])
+    ? '#0A0A0A'
     : sc.accentColor)
   const typeTitle = (k: string) => TYPE_TITLES[k] ?? k
   const subtotal = computed(() => doc.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0))
