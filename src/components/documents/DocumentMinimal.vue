@@ -7,7 +7,7 @@ const { sc, accent, typeTitle, subtotal, enabled, fontFamilyOf, formatCurrency, 
 </script>
 
 <template>
-  <article class="document-page min-h-[780px] text-[9px] leading-loose text-slate-900" :style="{ fontFamily: fontFamilyOf() }">
+  <article class="document-page text-[9px] leading-loose text-slate-900" :style="{ fontFamily: fontFamilyOf() }">
     <header class="flex items-start justify-between gap-10 mb-9">
       <div v-if="enabled('company')" class="max-w-[55%]">
         <img v-if="doc.company.logo" :src="doc.company.logo" class="mb-3 h-12 w-12 object-contain" alt="Logo de la empresa" />
