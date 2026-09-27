@@ -7,13 +7,14 @@ defineProps<{ variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'highligh
     :type="type ?? 'button'"
     :disabled="disabled"
     :class="[
-      'inline-flex items-center justify-center gap-2 font-bold select-none rounded-full focus-visible:outline-none transition-all',
+      'inline-flex items-center justify-center gap-2 font-bold select-none rounded-[10px] focus-visible:outline-none transition-all active:scale-[0.98]',
       'disabled:opacity-40 disabled:pointer-events-none',
       size === 'sm' ? 'px-4 py-1.5 text-xs' : size === 'lg' ? 'px-6 py-3 text-sm' : 'px-5 py-2.5 text-sm',
-      variant === 'secondary' ? 'bg-white text-text shadow-[0_2px_8px_rgba(20,20,20,0.06)] hover:shadow-[0_12px_32px_rgba(20,20,20,0.10)]' : '',
+      variant === 'secondary' ? 'border border-border bg-white text-text hover:bg-surface-hover' : '',
       variant === 'ghost' ? 'text-text-secondary hover:text-text hover:bg-surface-hover' : '',
-      variant === 'danger' ? 'bg-white text-danger shadow-[0_2px_8px_rgba(20,20,20,0.06)] hover:bg-danger hover:text-white' : '',
-      (!variant || variant === 'primary' || variant === 'highlight') ? 'bg-text text-white shadow-[0_8px_20px_rgba(20,20,20,0.18)] hover:bg-black' : '',
+      variant === 'danger' ? 'border border-[#F0D1D1] bg-[#FFF5F5] text-danger hover:bg-danger hover:text-white' : '',
+      (!variant || variant === 'primary') ? 'bg-text text-white hover:bg-[#2b2b2b]' : '',
+      variant === 'highlight' ? 'bg-accent text-accent-text hover:bg-accent-hover' : '',
     ]"
   >
     <slot />

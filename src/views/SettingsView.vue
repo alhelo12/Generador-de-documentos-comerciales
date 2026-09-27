@@ -74,29 +74,25 @@ function switchTab(t: typeof tab.value) {
 </script>
 
 <template>
-  <div class="h-full overflow-y-auto">
-    <div class="max-w-[1200px] mx-auto px-5 py-6 sm:px-8 sm:py-8">
-      <div class="settings-header mb-6 text-center">
-        <div class="w-20 h-20 rounded-full bg-text text-white flex items-center justify-center font-display font-extrabold text-3xl mx-auto shadow-[0_12px_32px_rgba(20,20,20,0.16)]">
-          {{ (settings.company.name ?? 'D').trim().charAt(0).toUpperCase() || 'D' }}
-        </div>
-        <h1 class="font-display text-xl font-extrabold text-text mt-3">{{ settings.company.name || 'Mi Empresa' }}</h1>
-        <p class="text-[11px] text-text-muted mt-0.5">Perfil del estudio · local y sin conexión</p>
-      </div>
+  <div class="app-page settings-view">
+    <div class="settings-header workspace-page-header">
+      <div><p class="eyebrow">Workspace</p><h1 class="workspace-title">Ajustes</h1><p class="workspace-subtitle">Configura tu empresa, documentos y respaldo local.</p></div>
+      <span class="settings-account-chip"><span>{{ (settings.company.name ?? 'D').trim().charAt(0).toUpperCase() || 'D' }}</span>{{ settings.company.name || 'Mi empresa' }}</span>
+    </div>
 
-          <div class="settings-shell max-w-[640px] mx-auto">
+          <div class="settings-shell mx-auto max-w-[980px]">
         <!-- Tabs -->
-        <div class="flex gap-2 overflow-x-auto pb-1 mb-4 justify-start sm:justify-center">
+        <div class="workspace-tabs mb-4 flex gap-1 overflow-x-auto">
           <button v-for="t in (['company','appearance','fields','data'] as const)" :key="t" @click="switchTab(t)" :class="[
-            'pill shrink-0 px-4 py-2 text-[11px] font-bold',
-            tab === t ? 'pill-active' : '',
+            'min-h-[38px] shrink-0 rounded-[7px] px-4 py-2 text-[11px] font-bold transition-colors',
+            tab === t ? 'bg-text text-white' : 'text-text-muted hover:bg-surface-hover',
           ]">
             {{ t === 'company' ? 'Empresa' : t === 'appearance' ? 'Apariencia' : t === 'fields' ? 'Campos' : 'Datos' }}
           </button>
         </div>
 
         <!-- Content -->
-        <div class="phone-card p-5 sm:p-7">
+        <div class="phone-card workspace-settings-panel p-4 sm:p-7">
           <!-- Company -->
           <div v-if="tab === 'company'" class="settings-content space-y-6">
             <div>
@@ -242,6 +238,5 @@ function switchTab(t: typeof tab.value) {
           </div>
         </div>
       </div>
-    </div>
   </div>
 </template>

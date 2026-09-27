@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDocumentsStore } from '@/stores/documents'
-import AppModal from '@/components/ui/AppModal.vue'
-import AppConfirm from '@/components/ui/AppConfirm.vue'
-import PrintPreview from '@/components/preview/PrintPreview.vue'
+import { useSettingsStore } from '@/stores/settings'
 import { useDocumentCalculations } from '@/composables/useDocumentCalculations'
 import { usePrint } from '@/composables/usePrint'
 import { useToast } from '@/composables/useToast'
-import { useSettingsStore } from '@/stores/settings'
+import AppModal from '@/components/ui/AppModal.vue'
+import AppConfirm from '@/components/ui/AppConfirm.vue'
+import PrintPreview from '@/components/preview/PrintPreview.vue'
+import type { DocumentData } from '@/types/document'
 
 const router = useRouter()
 const documents = useDocumentsStore()
@@ -17,132 +18,80 @@ const { formatCurrency, docTotal } = useDocumentCalculations()
 const { printDocument } = usePrint()
 const toast = useToast()
 
-const filterType = ref<string>('all')
+const filterType = ref('all')
 const search = ref('')
-const previewDoc = ref<any>(null)
-const showPreview = ref(false)
+const previewDoc = ref<DocumentData | null>(null)
 const deleteTarget = ref<string | null>(null)
 const showDeleteConfirm = ref(false)
 const currentPage = ref(1)
-const perPage = 12
+const perPage = 10
 
-const statusLabels: Record<string, string> = { 'draft': 'Borrador', 'sent': 'Enviado', 'paid': 'Pagado', 'cancelled': 'Cancelado' }
-const typeLabels: Record<string, string> = { 'invoice': 'Factura', 'delivery-note': 'Remision', 'quote': 'Cotizacion' }
-
-function totalOf(d: any) { return docTotal(d.items) }
-function initialOf(d: any) { return (d.client?.name ?? d.number ?? 'D').trim().charAt(0).toUpperCase() || 'D' }
-function monoOf(d: any) {
-  const id = String(d.id ?? d.number ?? '')
-  let h = 0
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 997
-  return `mono-${h % 5}`
-}
+const filters = [
+  { value: 'all', label: 'Todos' },
+  { value: 'invoice', label: 'Facturas' },
+  { value: 'quote', label: 'Cotizaciones' },
+  { value: 'delivery-note', label: 'Remisiones' },
+]
+const typeLabels: Record<string, string> = { invoice: 'Factura', 'delivery-note': 'Remisión', quote: 'Cotización' }
+const statusLabels: Record<string, string> = { draft: 'Borrador', sent: 'Enviado', paid: 'Pagado', cancelled: 'Cancelado' }
+const statusClasses: Record<string, string> = { draft: 'bg-[#FFF4D8] text-[#775D00]', sent: 'bg-[#EAF2FF] text-[#24528D]', paid: 'bg-[#E8F7E9] text-[#187343]', cancelled: 'bg-[#FBE8E8] text-[#A02A2A]' }
 
 const filtered = computed(() => {
-  let list = documents.docs
-  if (filterType.value !== 'all') list = list.filter(d => d.type === filterType.value)
-  if (search.value) {
-    const q = search.value.toLowerCase()
-    list = list.filter(d => d.number.toLowerCase().includes(q) || d.client.name.toLowerCase().includes(q))
-  }
-  return list.slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+  const query = search.value.trim().toLowerCase()
+  return documents.docs
+    .filter((doc) => filterType.value === 'all' || doc.type === filterType.value)
+    .filter((doc) => !query || `${doc.number} ${doc.client?.name ?? ''}`.toLowerCase().includes(query))
+    .slice()
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
 })
+const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / perPage)))
+const paginated = computed(() => filtered.value.slice((currentPage.value - 1) * perPage, currentPage.value * perPage))
 
-const totalPages = computed(() => Math.ceil(filtered.value.length / perPage))
-const paginated = computed(() => {
-  const start = (currentPage.value - 1) * perPage
-  return filtered.value.slice(start, start + perPage)
-})
-
+function totalOf(doc: DocumentData) { return docTotal(doc.items) }
 function editDoc(id: string) { router.push(`/editor/${id}`) }
-function preview(doc: any) { previewDoc.value = doc; showPreview.value = true }
+function resetPage() { currentPage.value = 1 }
 function confirmDelete(id: string) { deleteTarget.value = id; showDeleteConfirm.value = true }
 
 async function remove() {
   if (deleteTarget.value) {
     await documents.deleteDoc(deleteTarget.value)
     toast.show('Documento eliminado', 'success')
-    deleteTarget.value = null
   }
+  deleteTarget.value = null
   showDeleteConfirm.value = false
 }
 
-onMounted(async () => {
-  await documents.loadAll()
-})
+onMounted(() => documents.loadAll())
 </script>
 
 <template>
-  <div class="history-view h-full overflow-y-auto bg-bg">
-    <div class="max-w-[1100px] mx-auto px-4 py-6 sm:px-8">
-      <div class="history-header flex items-center gap-3 mb-5">
-        <div class="flex-1 text-center">
-          <h1 class="font-display text-lg font-extrabold text-text leading-tight">Colección</h1>
-          <p class="text-[11px] text-text-muted">{{ filtered.length }} piezas guardadas</p>
-        </div>
-      </div>
+  <div class="app-page history-view">
+    <header class="workspace-page-header">
+      <div><p class="eyebrow">Workspace</p><h1 class="workspace-title">Historial</h1><p class="workspace-subtitle">Consulta, filtra y recupera tus documentos guardados.</p></div>
+      <button type="button" class="workspace-header-action" @click="router.push('/editor')"><span aria-hidden="true">+</span> Nuevo documento</button>
+    </header>
 
-      <!-- Filters -->
-      <div class="history-content">
-        <div class="relative mb-4">
-          <input v-model="search" aria-label="Buscar piezas" placeholder="Buscar por folio o cliente…" class="w-full pl-11 pr-4 py-3 text-sm rounded-full bg-surface text-text placeholder:text-text-muted shadow-[0_2px_8px_rgba(20,20,20,0.06)]" />
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">⌕</span>
-        </div>
-        <div class="flex gap-2 overflow-x-auto pb-1 mb-2">
-          <button v-for="f in [{v:'all',l:'Todas'},{v:'invoice',l:'Facturas'},{v:'quote',l:'Cotizaciones'},{v:'delivery-note',l:'Remisiones'}]" :key="f.v" @click="filterType = f.v; currentPage = 1" :class="['pill shrink-0 px-4 py-2 text-[11px] font-bold', filterType === f.v ? 'pill-active' : '']">{{ f.l }}</button>
-        </div>
-        <p class="text-[11px] text-text-muted mb-5">Toca una pieza para verla. Desde ahí puedes editarla, imprimirla o eliminarla.</p>
+    <section class="workspace-panel mt-7">
+      <div class="workspace-history-toolbar"><div><p class="eyebrow">Biblioteca local</p><h2 class="workspace-panel-title">{{ filtered.length }} documentos</h2></div><label class="workspace-search-field workspace-history-search"><span class="sr-only">Buscar documentos</span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" stroke-linecap="round" /></svg><input id="history-search" v-model="search" type="search" placeholder="Buscar por folio o cliente" @input="resetPage" /></label></div>
+      <div class="workspace-filter-tabs" role="tablist" aria-label="Filtrar documentos"><button v-for="filter in filters" :key="filter.value" type="button" :aria-selected="filterType === filter.value" :class="['workspace-filter-tab', filterType === filter.value && 'is-active']" role="tab" @click="filterType = filter.value; resetPage()">{{ filter.label }}</button></div>
 
-        <!-- Grid -->
-        <div v-if="paginated.length" class="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-4">
-          <article v-for="d in paginated" :key="d.id" @click="preview(d)" class="phone-card p-3.5 cursor-pointer hover:-translate-y-1 transition-transform">
-            <div :class="['monogram aspect-[4/3] rounded-[18px] text-5xl', monoOf(d)]" aria-hidden="true">{{ initialOf(d) }}</div>
-            <p class="font-display text-[15px] font-extrabold text-text truncate mt-3">{{ d.client?.name || 'Sin cliente' }}</p>
-            <p class="text-[11px] text-text-muted mt-0.5 font-mono">{{ d.number }} · {{ d.date }}</p>
-            <div class="flex items-center justify-between mt-2.5">
-              <span class="text-sm font-extrabold tabular-nums text-text">{{ formatCurrency(totalOf(d)) }}</span>
-              <span class="chip">{{ statusLabels[d.status] }}</span>
-            </div>
-            <div class="flex gap-2 mt-3">
-              <button @click.stop="preview(d)" class="flex-1 py-2 text-[11px] font-bold rounded-full bg-surface-hover text-text">Ver</button>
-              <button @click.stop="editDoc(d.id)" class="flex-1 py-2 text-[11px] font-bold rounded-full bg-text text-white">Editar</button>
-              <button @click.stop="confirmDelete(d.id)" class="flex-1 py-2 text-[11px] font-bold rounded-full text-danger hover:bg-danger/10">Eliminar</button>
-            </div>
-          </article>
-        </div>
+      <div v-if="documents.loadError" class="workspace-feedback workspace-feedback-error mt-5"><p>No se pudo cargar el historial local.</p><button type="button" @click="documents.loaded = false; documents.loadAll()">Intentar de nuevo</button></div>
+      <div v-else-if="!paginated.length" class="workspace-feedback mt-5"><div class="mx-auto flex h-10 w-10 items-center justify-center rounded-[7px] bg-accent font-display text-lg font-extrabold text-accent-text">＋</div><p class="mt-3">{{ search || filterType !== 'all' ? 'No encontramos coincidencias' : 'Tu historial está vacío' }}</p><small>{{ search || filterType !== 'all' ? 'Prueba con otro folio, cliente o filtro.' : 'Crea tu primer documento y volveremos a mostrarlo aquí.' }}</small><button type="button" class="no-underline" @click="search || filterType !== 'all' ? (search = '', filterType = 'all') : router.push('/editor')">{{ search || filterType !== 'all' ? 'Limpiar filtros' : 'Crear documento' }}</button></div>
+      <div v-else class="workspace-history-table mt-5">
+        <div class="workspace-history-head"><span>Documento</span><span>Cliente</span><span>Estado</span><span class="text-right">Importe</span><span /></div>
+        <article v-for="doc in paginated" :key="doc.id" class="workspace-history-row">
+        <button type="button" class="flex min-w-0 flex-1 items-center gap-3 py-2 text-left hover:text-text" @click="editDoc(doc.id)">
+          <span class="workspace-document-name"><span class="workspace-document-icon">{{ (doc.client?.name || typeLabels[doc.type] || 'D').trim().charAt(0).toUpperCase() }}</span><span><strong>{{ typeLabels[doc.type] }} · {{ doc.number }}</strong><small>{{ doc.date }}</small></span></span>
+        </button>
+        <span class="workspace-history-client">{{ doc.client?.name || 'Sin cliente' }}</span>
+        <span :class="['workspace-status', statusClasses[doc.status] || statusClasses.draft]">{{ statusLabels[doc.status] || 'Borrador' }}</span>
+        <span class="workspace-document-total">{{ formatCurrency(totalOf(doc)) }}</span>
+        <button type="button" class="touch-target rounded-[7px] px-2 text-xs font-bold text-text-muted hover:bg-[#FBE8E8] hover:text-[#A02A2A]" aria-label="Eliminar documento" @click="confirmDelete(doc.id)">×</button>
+      </article>
+      <div class="flex items-center justify-between border-t border-border-light px-3 py-3"><button type="button" class="touch-target rounded-[7px] px-3 text-xs font-bold text-text-muted disabled:opacity-30" :disabled="currentPage === 1" @click="currentPage--">‹ Anterior</button><span class="text-xs font-bold text-text-muted">{{ currentPage }} / {{ totalPages }}</span><button type="button" class="touch-target rounded-[7px] px-3 text-xs font-bold text-text-muted disabled:opacity-30" :disabled="currentPage === totalPages" @click="currentPage++">Siguiente ›</button></div></div>
+    </section>
 
-        <div v-else class="phone-card text-center py-16 px-6" style="border-style: dashed;">
-          <div class="w-14 h-14 rounded-full bg-surface-hover flex items-center justify-center font-display font-extrabold text-2xl text-text-muted mx-auto mb-3">✦</div>
-          <p class="font-display font-extrabold text-text">Sin piezas</p>
-          <p class="text-xs text-text-muted mt-1 max-w-[280px] mx-auto">{{ search || filterType !== 'all' ? 'Ningún documento coincide con tu búsqueda.' : 'Aquí se guardan tus facturas, cotizaciones y remisiones. Todo queda en tu equipo.' }}</p>
-          <button v-if="!search && filterType === 'all'" @click="$router.push('/editor')" class="mt-4 px-5 py-2.5 text-xs font-bold rounded-full bg-text text-white">Crear documento</button>
-          <button v-else @click="search = ''; filterType = 'all'; currentPage = 1" class="mt-4 px-5 py-2.5 text-xs font-bold rounded-full bg-surface-hover text-text">Limpiar filtros</button>
-        </div>
-
-        <!-- Pagination -->
-        <div v-if="totalPages > 1" class="flex items-center justify-center gap-2 mt-7">
-          <button @click="currentPage = Math.max(1, currentPage - 1)" aria-label="Página anterior" :disabled="currentPage === 1" class="px-4 h-9 rounded-full text-xs font-bold bg-surface text-text-secondary shadow-[0_2px_8px_rgba(20,20,20,0.06)] disabled:opacity-30">‹ Anterior</button>
-          <button v-for="p in totalPages" :key="p" @click="currentPage = p" :aria-label="`Ir a página ${p}`" :aria-current="p === currentPage ? 'page' : undefined" :class="['w-11 h-11 rounded-full text-xs font-bold transition-all', p === currentPage ? 'bg-text text-white shadow-[0_8px_20px_rgba(20,20,20,0.18)]' : 'bg-surface text-text-secondary shadow-[0_2px_8px_rgba(20,20,20,0.06)]']">{{ p }}</button>
-          <button @click="currentPage = Math.min(totalPages, currentPage + 1)" aria-label="Página siguiente" :disabled="currentPage === totalPages" class="px-4 h-9 rounded-full text-xs font-bold bg-surface text-text-secondary shadow-[0_2px_8px_rgba(20,20,20,0.06)] disabled:opacity-30">Siguiente ›</button>
-        </div>
-
-        <!-- Preview Modal -->
-        <AppModal :show="showPreview" title="Pieza" @close="showPreview = false" max-width="max-w-4xl">
-          <div v-if="previewDoc" class="flex justify-center bg-surface-hover rounded-[18px] p-4">
-            <PrintPreview :doc="previewDoc" :sections="settings.sections" />
-          </div>
-          <div class="flex justify-end gap-2 mt-5 no-print">
-            <button @click="showPreview = false" class="px-5 py-2.5 text-xs font-bold rounded-full bg-surface-hover text-text-secondary">Cerrar</button>
-            <button @click="previewDoc && printDocument(previewDoc.paperSize)" class="px-5 py-2.5 text-xs font-bold rounded-full bg-surface text-text shadow-[0_2px_8px_rgba(20,20,20,0.06)]">Imprimir</button>
-            <button @click="previewDoc && editDoc(previewDoc.id)" class="px-5 py-2.5 text-xs font-bold rounded-full bg-text text-white">Editar →</button>
-          </div>
-        </AppModal>
-
-        <AppConfirm :show="showDeleteConfirm" title="Eliminar pieza" message="Eliminar este documento? No se puede deshacer." confirm-text="Eliminar" variant="danger" @confirm="remove" @cancel="showDeleteConfirm = false" />
-      </div>
-    </div>
-    <div v-if="previewDoc" class="print-sheet print-only">
-      <PrintPreview :doc="previewDoc" :sections="settings.sections" />
-    </div>
+    <AppModal :show="Boolean(previewDoc)" title="Vista previa" max-width="max-w-4xl" @close="previewDoc = null"><div v-if="previewDoc" class="rounded-[16px] bg-surface-hover p-3 sm:p-5"><PrintPreview :doc="previewDoc" :sections="settings.sections" /></div><div class="mt-4 flex justify-end gap-2 no-print"><button type="button" class="rounded-[12px] bg-surface-hover px-4 py-3 text-xs font-bold text-text" @click="previewDoc = null">Cerrar</button><button v-if="previewDoc" type="button" class="rounded-[12px] bg-text px-4 py-3 text-xs font-bold text-white" @click="printDocument(previewDoc.paperSize)">Imprimir</button></div></AppModal>
+    <AppConfirm :show="showDeleteConfirm" title="Eliminar documento" message="¿Eliminar este documento? Esta acción no se puede deshacer." confirm-text="Eliminar" variant="danger" @confirm="remove" @cancel="showDeleteConfirm = false" />
   </div>
 </template>

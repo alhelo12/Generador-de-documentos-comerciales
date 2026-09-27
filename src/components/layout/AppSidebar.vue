@@ -1,38 +1,70 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useEditorStore } from '@/stores/editor'
+import { useSettingsStore } from '@/stores/settings'
 
 const route = useRoute()
+const router = useRouter()
+const editor = useEditorStore()
+const settings = useSettingsStore()
 
 const navItems = [
-  { path: '/', label: 'Inicio', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4' },
-  { path: '/editor', label: 'Crear', icon: 'M12 4v16m8-8H4' },
-  { path: '/history', label: 'Historial', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-  { path: '/settings', label: 'Ajustes', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+  { path: '/', label: 'Inicio', icon: 'M4 10.5 12 4l8 6.5v8.25a1.25 1.25 0 0 1-1.25 1.25h-13.5A1.25 1.25 0 0 1 4 18.75V10.5Z' },
+  { path: '/history', label: 'Historial', icon: 'M4 6.75h16M4 12h16M4 17.25h10' },
+  { path: '/settings', label: 'Ajustes', icon: 'M12 8.25a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5ZM4.93 4.93l1.42 1.42m11.3-1.42-1.42 1.42M12 2.5v2M12 19.5v2M2.5 12h2m15 0h2m-17.57 7.07 1.42-1.42m11.3 1.42-1.42-1.42' },
 ]
 
 function isActive(path: string) {
   if (path === '/') return route.path === '/'
   return route.path.startsWith(path)
 }
+
+function createInvoice() {
+  editor.newDoc('invoice')
+  router.push('/editor')
+}
 </script>
 
 <template>
-  <nav class="no-print fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-stretch gap-1 rounded-[24px] bg-white/90 backdrop-blur-md border border-white px-2 py-1.5" style="box-shadow: 0 12px 32px rgba(20,20,20,0.16);">
-    <router-link
-      v-for="item in navItems"
-      :key="item.path"
-      :to="item.path"
-      :aria-label="item.label"
-      :title="item.label"
-      :class="[
-        'min-w-[62px] px-3 py-1.5 rounded-[18px] flex flex-col items-center gap-0.5 transition-all',
-        isActive(item.path)
-          ? 'bg-text text-white'
-          : 'text-text-secondary hover:bg-surface-hover hover:text-text',
-      ]"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" :d="item.icon" /></svg>
-      <span class="text-[9px] font-bold leading-none">{{ item.label }}</span>
+  <aside class="app-sidebar" aria-label="Navegación principal">
+    <div class="app-brand">
+      <span class="app-brand-mark">D</span>
+      <span class="app-brand-name">DocGen</span>
+      <span class="app-brand-badge">Beta</span>
+    </div>
+
+    <button type="button" class="app-create-button" @click="createInvoice">
+      <span class="flex h-6 w-6 items-center justify-center rounded-md bg-text text-lg leading-none text-white" aria-hidden="true">+</span>
+      <span>Nuevo documento</span>
+    </button>
+
+    <p class="app-nav-label">Workspace</p>
+    <div class="app-nav-links">
+      <router-link v-for="item in navItems.slice(0, 1)" :key="item.path" :to="item.path" :class="['app-nav-link', isActive(item.path) && 'is-active']">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path :d="item.icon" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <span>{{ item.label }}</span>
+      </router-link>
+      <router-link v-for="item in navItems.slice(1)" :key="item.path" :to="item.path" :class="['app-nav-link', isActive(item.path) && 'is-active']">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path :d="item.icon" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <span>{{ item.label }}</span>
+      </router-link>
+    </div>
+
+    <div class="mt-auto hidden space-y-3 lg:block">
+      <div class="app-sidebar-divider" />
+      <div class="flex items-center gap-2.5 px-2">
+        <span class="app-sidebar-avatar">{{ (settings.company.name || 'D').trim().charAt(0).toUpperCase() }}</span>
+        <span class="min-w-0"><span class="block truncate text-xs font-bold text-text">{{ settings.company.name || 'Mi empresa' }}</span><span class="block text-[10px] text-text-muted">Cuenta local</span></span>
+      </div>
+      <router-link to="/settings" class="app-sidebar-settings"><span>Configuración</span><span>↗</span></router-link>
+    </div>
+  </aside>
+
+  <nav class="app-mobile-nav no-print" aria-label="Navegación móvil">
+    <router-link v-for="item in navItems" :key="item.path" :to="item.path" :aria-label="item.label" :class="['app-mobile-link', isActive(item.path) && 'is-active']">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path :d="item.icon" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <span>{{ item.label }}</span>
     </router-link>
+    <button type="button" class="app-mobile-create" aria-label="Nuevo documento" @click="createInvoice"><span aria-hidden="true">+</span></button>
   </nav>
 </template>

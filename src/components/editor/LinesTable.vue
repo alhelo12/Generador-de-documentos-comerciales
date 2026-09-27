@@ -19,7 +19,7 @@ const ivaLabel = computed(() => {
 
 <template>
   <div class="space-y-3">
-    <div class="overflow-x-auto">
+    <div class="hidden overflow-x-auto sm:block">
       <table class="w-full text-sm">
         <thead>
           <tr class="border-b border-black/[0.04]">
@@ -46,6 +46,19 @@ const ivaLabel = computed(() => {
           />
         </tbody>
       </table>
+    </div>
+    <div class="space-y-3 sm:hidden">
+      <LineRow
+        v-for="(item, i) in items"
+        :key="item.id"
+        :item="item"
+        :index="i"
+        :isOnly="items.length === 1"
+        :currencySymbol="sym()"
+        :mobile="true"
+        @update="(field, value) => emit('update', item.id, field, value)"
+        @remove="emit('remove', item.id)"
+      />
     </div>
     <button @click="emit('add')" class="text-xs font-bold text-accent hover:text-accent-hover transition-colors">+ Agregar linea</button>
 
